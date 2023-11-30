@@ -1,0 +1,104 @@
+{
+    "name": "python-smart-execute",
+    "displayName": "Python Smart Execute",
+    "description": "Send code selection to REPL. Includes decorators in selection and jumps to beginning next line.",
+    "publisher": "inwtlab",
+    "repository": {
+        "url": "https://github.com/inwtlab/python-smart-execute"
+    },
+    "icon": "inwt-logo-square.png",
+    "version": "0.1.0",
+    "engines": {
+        "vscode": "^1.52.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Keymaps"
+    ],
+    "activationEvents": [
+        "onLanguage:python"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "Python Smart Execute",
+            "properties": {
+                "inwtlab.Python.Smart.Execute.smartExecute.engine": {
+                    "description": "Send the code selection to a python REPL or jupyter ipython session.",
+                    "type": "string",
+                    "default": "python",
+                    "enum": [
+                        "python",
+                        "jupyter"
+                    ],
+                    "enumDescriptions": [
+                        "Sends code selection to python REPL. Optionally starts a new REPL.",
+                        "Sends code selection to jupyter ipython session. Optionally starts an interactive notebook."
+                    ]
+                },
+                "inwtlab.Python.Smart.Execute.smartExecute.blockSelect": {
+                    "description": "Smart execute will auto-select code blocks for execution.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "inwtlab.Python.Smart.Execute.smartExecute.step": {
+                    "description": "Move the cursor to the next non empty line after executing code.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "inwtlab.Python.Smart.Execute.smartExecute.delay": {
+                    "description": "How long (in milliseconds) the selected code block will be highlighted in the editor before it is executed.",
+                    "type": "number",
+                    "default": 100
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "python-smart-execute.smartExecAndStep",
+                "title": "Python Smart Execute: Send selection to REPL and step."
+            },
+            {
+                "command": "python-smart-execute.debugExecAndStep",
+                "title": "Python Smart Execute: Send selection to debug console and step."
+            }
+        ],
+        "keybindings": [
+            {
+                "key": "ctrl+enter",
+                "command": "python-smart-execute.debugExecAndStep",
+                "when": "editorTextFocus && inDebugMode && !replaceInputFocussed && editorLangId == 'python'"
+            },
+            {
+                "key": "ctrl+enter",
+                "command": "python-smart-execute.smartExecAndStep",
+                "when": "editorTextFocus && !inDebugMode && !replaceInputFocussed && editorLangId == 'python'"
+            }
+        ]
+    },
+    "extensionDependencies": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+    ],
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
+        "test": "node ./out/test/runTest.js"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.52.0",
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.0.4",
+        "@types/node": "^12.11.7",
+        "eslint": "^7.15.0",
+        "@typescript-eslint/eslint-plugin": "^4.9.0",
+        "@typescript-eslint/parser": "^4.9.0",
+        "glob": "^7.1.6",
+        "mocha": "^8.1.3",
+        "typescript": "^4.1.2",
+        "vscode-test": "^1.4.1"
+    }
+}
