@@ -15,9 +15,9 @@ This phase focuses on bringing the project's development tools up to date.
 ## Phase 2: Setup Documentation
 This phase focuses on creating clear instructions for local development.
 
-- [x] Task: Create `DEVELOPMENT.md` with comprehensive setup instructions [pending commit]
-- [x] Task: Document prerequisites (Node.js, npm, VS Code) and extension dependencies [pending commit]
-- [x] Task: Document the "Build and Run" process (npm commands, VS Code "Run and Debug") [pending commit]
-- [x] Task: Document the testing and linting workflow [pending commit]
+- [x] Task: Create `DEVELOPMENT.md` with comprehensive setup instructions 05b4f91
+- [x] Task: Document prerequisites (Node.js, npm, VS Code) and extension dependencies 05b4f91
+- [x] Task: Document the "Build and Run" process (npm commands, VS Code "Run and Debug") 05b4f91
+- [x] Task: Document the testing and linting workflow 05b4f91
 - [-] Task: Update the main `README.md` to link to the new development guide (Skipped: README is for end users)
 - [ ] Task: Conductor - User Manual Verification 'Setup Documentation' (Protocol in workflow.md)
