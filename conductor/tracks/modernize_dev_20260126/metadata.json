@@ -1,0 +1,8 @@
+{
+  "track_id": "modernize_dev_20260126",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-01-26T12:00:00Z",
+  "updated_at": "2026-01-26T12:00:00Z",
+  "description": "Bring the project into an up-to-date shape by updating dev dependencies and documenting local development setup."
+}

@@ -7,10 +7,10 @@ import * as vscode from "vscode";
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand("python-smart-execute.smartExecAndStep", async () => {
-            let engine = getConfigEngine();
-            let editor = vscode.window.activeTextEditor;
+            const engine = getConfigEngine();
+            const editor = vscode.window.activeTextEditor;
             if (editor) {
-                let selection = smartSelect();
+                const selection = smartSelect();
                 await delay();
                 if (engine === "python") {
                     selectionToRepl(selection);
@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         vscode.commands.registerCommand("python-smart-execute.debugExecAndStep", async () => {
-            let editor = vscode.window.activeTextEditor;
+            const editor = vscode.window.activeTextEditor;
             if (editor) {
                 smartSelect();
                 await delay();
@@ -42,16 +42,16 @@ async function selectionToRepl(selection: string) {
     selection = sanitizeSelection(selection);
     await vscode.commands.executeCommand("python.startREPL");
     if (vscode.window) {
-        let terminal = vscode.window.activeTerminal;
+        const terminal = vscode.window.activeTerminal;
         terminal?.sendText(selection, true);
     }
 }
 
 function sanitizeSelection(code: string) {
-    let rootIndentation = levelOfIndentation(code);
+    const rootIndentation = levelOfIndentation(code);
     let codeLines = code.split("\n");
     // trim indentation:
-    let rootIndentationRegExp = RegExp(
+    const rootIndentationRegExp = RegExp(
         "^\\s{indentation-level}".replace("indentation-level", rootIndentation.toString()),
     );
     codeLines = codeLines.map((line) => {
@@ -95,7 +95,7 @@ function step(editor: vscode.TextEditor) {
 }
 
 function smartSelect() {
-    let editor = vscode.window.activeTextEditor;
+    const editor = vscode.window.activeTextEditor;
     let selection = "";
     if (editor) {
         if (editor.selection.isEmpty) {
@@ -107,11 +107,11 @@ function smartSelect() {
             //      function, loop, control structure): select the entire
             //      block
             //   2. When we are not in case 1 or 2, select the current line
-            let line = editor.document.lineAt(editor.selection.active.line);
+            const line = editor.document.lineAt(editor.selection.active.line);
             if (getConfigSmartExecute()) {
                 // select the code block
-                let endLine = findEndLineOfPythonCodeBlock(line, editor.document);
-                let startLine = findStartLineOfPythonCodeBlock(line, editor.document);
+                const endLine = findEndLineOfPythonCodeBlock(line, editor.document);
+                const startLine = findStartLineOfPythonCodeBlock(line, editor.document);
                 editor.selection = newSelectionForBlock(startLine, endLine);
             } else {
                 // otherwise use current line
@@ -160,7 +160,7 @@ function findStartLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.
 }
 
 function findEndLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.TextDocument) {
-    let rootIndentation = levelOfIndentation(line.text);
+    const rootIndentation = levelOfIndentation(line.text);
     let finalLine = line;
     while (isNotLastLine(line.lineNumber + 1, document.lineCount)) {
         line = document.lineAt(line.lineNumber + 1);
@@ -183,7 +183,7 @@ function findEndLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.Te
 }
 
 function isClosingParanthesis(text: string) {
-    return /^\s*[\)\]\}]+/.test(text);
+    return /^\s*[)\]}]+/.test(text);
 }
 
 function isDecorator(text: string) {
@@ -207,7 +207,7 @@ function isElse(text: string) {
 }
 
 function levelOfIndentation(line: string) {
-    let regexpMatch = line.match(/^\s*/);
+    const regexpMatch = line.match(/^\s*/);
     if (regexpMatch === null) {
         return 0;
     } else {
@@ -216,7 +216,7 @@ function levelOfIndentation(line: string) {
 }
 
 function indentationAsString(line: string) {
-    let regexpMatch = line.match(/^\s*/);
+    const regexpMatch = line.match(/^\s*/);
     if (regexpMatch === null) {
         return "";
     } else {
@@ -257,11 +257,11 @@ function isNotLastLine(currentLine: number, lineCount: number) {
 
 function lineIsCode(line: vscode.TextLine | undefined) {
     // A line is empty when its empty, contains only whitespaces or a comment
-    let lineText = line?.text || "";
+    const lineText = line?.text || "";
     return !(line?.isEmptyOrWhitespace || /^\s*#/.test(lineText));
 }
 
 function delay() {
-    let ms: number = getConfigDelay();
+    const ms: number = getConfigDelay();
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
