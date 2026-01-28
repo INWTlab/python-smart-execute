@@ -2,13 +2,13 @@
 
 This plan outlines the steps to refactor the extension logic for testability and implement a comprehensive automated test suite based on existing interactive examples.
 
-## Phase 1: Refactoring & Mocking Infrastructure
+## Phase 1: Refactoring & Mocking Infrastructure [checkpoint: 2e77a9d]
 This phase focuses on making the current logic testable by introducing mocks for VS Code APIs.
 
-- [ ] Task: Create a mocking utility for `vscode.TextDocument` and `vscode.TextLine` in `src/test/suite/mocks.ts`
-- [ ] Task: Refactor `src/extension.ts` to ensure block detection functions are exported and don't rely on global state
-- [ ] Task: Verify that the extension still compiles and lints correctly after refactoring
-- [ ] Task: Conductor - User Manual Verification 'Refactoring & Mocking Infrastructure' (Protocol in workflow.md)
+- [x] Task: Create a mocking utility for `vscode.TextDocument` and `vscode.TextLine` in `src/test/suite/mocks.ts` [ada5562]
+- [x] Task: Refactor `src/extension.ts` to ensure block detection functions are exported and don't rely on global state [9870c86]
+- [x] Task: Verify that the extension still compiles and lints correctly after refactoring
+- [x] Task: Conductor - User Manual Verification 'Refactoring & Mocking Infrastructure' (Protocol in workflow.md)
 
 ## Phase 2: Automated Test Suite Implementation
 This phase focuses on implementing the actual tests covering all identified Python constructs.
