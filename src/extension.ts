@@ -82,16 +82,21 @@ function sanitizeSelection(code: string) {
 
 function step(editor: vscode.TextEditor) {
     if (editor && getConfigStep()) {
-        let line = editor.document.lineAt(editor.selection.active.line);
-        while (isNotLastLine(line.lineNumber, editor.document.lineCount)) {
-            line = editor.document.lineAt(line.lineNumber + 1);
-            if (lineIsCode(line) && !isDecorator(line.text)) {
-                break;
-            }
-        }
-        editor.selection = newSelectionForCursor(line);
+        const line = editor.document.lineAt(editor.selection.active.line);
+        const nextLine = findNextCodeLine(line, editor.document);
+        editor.selection = newSelectionForCursor(nextLine);
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.start));
     }
+}
+
+export function findNextCodeLine(line: vscode.TextLine, document: vscode.TextDocument): vscode.TextLine {
+    while (isNotLastLine(line.lineNumber, document.lineCount)) {
+        line = document.lineAt(line.lineNumber + 1);
+        if (lineIsCode(line) && !isDecorator(line.text)) {
+            break;
+        }
+    }
+    return line;
 }
 
 function smartSelect() {
@@ -142,7 +147,7 @@ function getConfigDelay(): number {
     return vscode.workspace.getConfiguration("inwtlab.Python.Smart.Execute").smartExecute.delay;
 }
 
-function findStartLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.TextDocument) {
+export function findStartLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.TextDocument) {
     // we check if there are any decorators before the current line. If so,
     // we find the most top level and return that as starting line
     let finalLine = line;
@@ -159,7 +164,7 @@ function findStartLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.
     return finalLine;
 }
 
-function findEndLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.TextDocument) {
+export function findEndLineOfPythonCodeBlock(line: vscode.TextLine, document: vscode.TextDocument) {
     const rootIndentation = levelOfIndentation(line.text);
     let finalLine = line;
     while (isNotLastLine(line.lineNumber + 1, document.lineCount)) {
@@ -186,7 +191,7 @@ function isClosingParanthesis(text: string) {
     return /^\s*[)\]}]+/.test(text);
 }
 
-function isDecorator(text: string) {
+export function isDecorator(text: string) {
     return /^\s*@/.test(text);
 }
 
@@ -251,11 +256,11 @@ function newSelectionForLine(line: vscode.TextLine) {
     );
 }
 
-function isNotLastLine(currentLine: number, lineCount: number) {
+export function isNotLastLine(currentLine: number, lineCount: number) {
     return currentLine < lineCount - 1;
 }
 
-function lineIsCode(line: vscode.TextLine | undefined) {
+export function lineIsCode(line: vscode.TextLine | undefined) {
     // A line is empty when its empty, contains only whitespaces or a comment
     const lineText = line?.text || "";
     return !(line?.isEmptyOrWhitespace || /^\s*#/.test(lineText));
