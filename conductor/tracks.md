@@ -6,3 +6,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: Modernize Development Environment and Setup Documentation**
   *Link: [./tracks/modernize_dev_20260126/](./tracks/modernize_dev_20260126/)*
+
+---
+
+- [ ] **Track: Automated Block Detection Testing**
+  *Link: [./tracks/automated_block_testing_20260127/](./tracks/automated_block_testing_20260127/)*
