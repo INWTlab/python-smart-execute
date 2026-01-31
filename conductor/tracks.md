@@ -9,5 +9,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [ ] **Track: Automated Block Detection Testing**
+- [~] **Track: Automated Block Detection Testing**
   *Link: [./tracks/automated_block_testing_20260127/](./tracks/automated_block_testing_20260127/)*

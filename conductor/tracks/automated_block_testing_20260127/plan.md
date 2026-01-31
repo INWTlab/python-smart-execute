@@ -13,7 +13,7 @@ This phase focuses on making the current logic testable by introducing mocks for
 ## Phase 2: Automated Test Suite Implementation
 This phase focuses on implementing the actual tests covering all identified Python constructs.
 
-- [ ] Task: Initialize `src/test/suite/smartSelect.test.ts` with basic test structure
+- [~] Task: Initialize `src/test/suite/smartSelect.test.ts` with basic test structure
 - [ ] Task: Implement tests for Decorators and Function/Class definitions
 - [ ] Task: Implement tests for Control Flow blocks (`if/else`, `try/except`)
 - [ ] Task: Implement tests for Multi-line constructs (Comprehensions, Dictionaries, Docstrings)

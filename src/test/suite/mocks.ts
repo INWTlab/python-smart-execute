@@ -35,11 +35,45 @@ export class MockTextLine implements vscode.TextLine {
     }
 }
 
-export class MockTextDocument {
+export class MockTextDocument implements vscode.TextDocument {
     private lines: MockTextLine[];
+    private _content: string;
     
     constructor(content: string) {
+        this._content = content;
         this.lines = content.split('\n').map((text, index) => new MockTextLine(index, text));
+    }
+
+    get uri(): vscode.Uri {
+        return vscode.Uri.file('mock://test.py');
+    }
+
+    get fileName(): string {
+        return 'test.py';
+    }
+
+    get isUntitled(): boolean {
+        return true;
+    }
+
+    get languageId(): string {
+        return 'python';
+    }
+
+    get version(): number {
+        return 1;
+    }
+
+    get isDirty(): boolean {
+        return false;
+    }
+
+    get isClosed(): boolean {
+        return false;
+    }
+
+    get saveId(): string | undefined {
+        return undefined;
     }
 
     lineAt(line: number | vscode.Position): vscode.TextLine {
@@ -50,16 +84,46 @@ export class MockTextDocument {
         return this.lines[index];
     }
 
+    offsetAt(position: vscode.Position): number {
+        return 0;
+    }
+
+    positionAt(offset: number): vscode.Position {
+        return new vscode.Position(0, 0);
+    }
+
+    getText(range?: vscode.Range): string {
+        if (!range) {
+            return this._content;
+        }
+        return this._content;
+    }
+
+    getWordRangeAtPosition(position: vscode.Position | vscode.Position, regex?: RegExp): vscode.Range | undefined {
+        return undefined;
+    }
+
+    validateRange(range: vscode.Range): vscode.Range {
+        return range;
+    }
+
+    validatePosition(position: vscode.Position): vscode.Position {
+        return position;
+    }
+
     get lineCount(): number {
         return this.lines.length;
     }
-    
-    // Minimal implementation of getText to satisfy basic usage if needed
-    getText(range?: vscode.Range): string {
-        if (!range) {
-            return this.lines.map(l => l.text).join('\n');
-        }
-        // This is a simplified Mock, complex range extraction not implemented yet
-        return "";
+
+    get eol(): vscode.EndOfLine {
+        return vscode.EndOfLine.LF;
+    }
+
+    get encoding(): string {
+        return 'utf8';
+    }
+
+    save(): Thenable<boolean> {
+        return Promise.resolve(true);
     }
 }
