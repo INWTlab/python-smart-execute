@@ -1,7 +1,14 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { findStartLineOfPythonCodeBlock, findEndLineOfPythonCodeBlock, isDecorator, findNextCodeLine } from '../../extension';
-import { MockTextDocument, MockTextLine } from './mocks';
+import { 
+    findStartLineOfPythonCodeBlock, 
+    findEndLineOfPythonCodeBlock, 
+    isDecorator, 
+    findNextCodeLine,
+    isNotLastLine,
+    lineIsCode
+} from '../../extension';
+import { MockTextDocument } from './mocks';
 
 suite('Smart Select Logic Test Suite', () => {
     test('Exports should exist', () => {
