@@ -1,9 +1,10 @@
 """
-Script to test smartSelect + execute interactively.
+Interactive session examples for Python Smart Execute extension.
 
-- Execute line by line. Hitting Ctrl+Enter should bring you to the end of the
-  script.
-- Also try Ctrl+Shift+A, then Ctrl+Enter. This should run the complete script.
+This file contains examples that were previously used for manual interactive testing.
+
+NOTE: These examples are now covered by automated tests in `src/test/suite/smartSelect.test.ts`.
+Use `npm test` to run the comprehensive test suite.
 """
 
 import time
@@ -78,7 +79,6 @@ def some_function(x):
         print(i)
     return x
 
-
 some_function(1)
 
 
@@ -96,7 +96,6 @@ class test:
 
 # - open/close paranthesis multi-line
 # - multi line doc strings
-
 
 import matplotlib.pyplot as plt
 
