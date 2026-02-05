@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import { jumpNextBlock, jumpPreviousBlock } from "./navigation/blockNavigator";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -30,6 +31,30 @@ export function activate(context: vscode.ExtensionContext) {
                 await delay();
                 vscode.commands.executeCommand("editor.debug.action.selectionToRepl");
                 step(editor);
+            }
+        }),
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("python-smart-execute.navigateToNextBlock", () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                const position = editor.selection.active;
+                const newPosition = jumpNextBlock(editor.document, position);
+                editor.selection = new vscode.Selection(newPosition, newPosition);
+                editor.revealRange(new vscode.Range(newPosition, newPosition));
+            }
+        }),
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("python-smart-execute.navigateToPreviousBlock", () => {
+            const editor = vscode.window.activeTextEditor;
+            if (editor) {
+                const position = editor.selection.active;
+                const newPosition = jumpPreviousBlock(editor.document, position);
+                editor.selection = new vscode.Selection(newPosition, newPosition);
+                editor.revealRange(new vscode.Range(newPosition, newPosition));
             }
         }),
     );

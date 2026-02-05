@@ -61,6 +61,14 @@
             {
                 "command": "python-smart-execute.debugExecAndStep",
                 "title": "Python Smart Execute: Send selection to debug console and step."
+            },
+            {
+                "command": "python-smart-execute.navigateToNextBlock",
+                "title": "Python Smart Execute: Navigate to next code block"
+            },
+            {
+                "command": "python-smart-execute.navigateToPreviousBlock",
+                "title": "Python Smart Execute: Navigate to previous code block"
             }
         ],
         "keybindings": [
@@ -73,6 +81,16 @@
                 "key": "ctrl+enter",
                 "command": "python-smart-execute.smartExecAndStep",
                 "when": "editorTextFocus && !inDebugMode && !replaceInputFocussed && editorLangId == 'python'"
+            },
+            {
+                "key": "ctrl+alt+down",
+                "command": "python-smart-execute.navigateToNextBlock",
+                "when": "editorTextFocus && editorLangId == 'python'"
+            },
+            {
+                "key": "ctrl+alt+up",
+                "command": "python-smart-execute.navigateToPreviousBlock",
+                "when": "editorTextFocus && editorLangId == 'python'"
             }
         ]
     },

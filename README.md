@@ -20,3 +20,5 @@ complete block in the REPL instead of just that line.
 
 -   ctrl+enter: (Smart) Execute selection or line in interactive window or debug console
     _and_ step
+-   ctrl+alt+down: Navigate to next code block
+-   ctrl+alt+up: Navigate to previous code block
