@@ -17,10 +17,12 @@ This is a VS Code extension called "Python Smart Execute" that intelligently sen
 - **Prepublish**: `npm run vscode:prepublish`
 
 ### Testing
-- **Full test suite**: `xvfb-run -a npm test` (compiles, lints, then runs tests; requires xvfb package)
+- **Unit tests (no display needed)**: `npm run test:unit` (runs logic tests using Mocha directly)
+- **Integration tests (requires display)**: `npm run test:integration` (requires xvfb or a window server)
+- **Full test suite**: `xvfb-run -a npm test` (compiles, lints, then runs integration tests)
 - **Single test execution**: Tests are compiled to JS, run individual tests with `xvfb-run -a node ./out/test/runTest.js`
 - **Test framework**: Mocha with TDD UI, tests located in `src/test/suite/**/*.test.ts`
-- **Test runner**: Uses `@vscode/test-electron` for integration testing
+- **Test runner**: Uses `@vscode/test-electron` for integration testing, or direct Mocha for unit tests.
 
 ### Development Workflow
 1. `npm install` - Install dependencies (includes xvfb for headless testing)

@@ -14,10 +14,14 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "kahole.magit"
+                "kahole.magit",
+                "ms-python.python",
+                "ms-toolsai.jupyter"
             ]
         }
     }
+    // install system libraries
+    // "postCreateCommand": "npm install --save-dev xvfb-maybe"
 
     // Features to add to the dev container. More info: https://containers.dev/features.
     // "features": {},

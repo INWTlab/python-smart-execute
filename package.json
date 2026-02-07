@@ -105,6 +105,8 @@
         "pretest": "npm run compile && npm run lint",
         "lint": "eslint src",
         "test": "node ./out/test/runTest.js",
+        "test:unit": "node ./out/test/runUnitTests.js",
+        "test:integration": "xvfb-run -a node ./out/test/runTest.js",
         "coverage": "c8 --include=out/extension.js npm test"
     },
     "devDependencies": {

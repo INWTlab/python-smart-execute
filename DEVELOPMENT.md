@@ -57,14 +57,29 @@ npm run lint -- --fix
 ```
 
 ### Testing
-We use Mocha for integration tests. To run all tests:
-```bash
-npm test
-```
-This command will:
+We use Mocha for testing. We have separated unit tests (which can run in any environment) from integration tests (which require a VS Code instance).
+
+- **Run all tests (including integration):**
+  ```bash
+  npm test
+  ```
+  Note: This requires a display server (e.g., `xvfb-run -a npm test` on Linux).
+
+- **Run only unit tests (headless safe):**
+  ```bash
+  npm run test:unit
+  ```
+  These tests verify the core logic without launching VS Code.
+
+- **Run integration tests specifically:**
+  ```bash
+  npm run test:integration
+  ```
+
+The test runner will:
 1.  Compile the project.
 2.  Run the linter.
-3.  Execute the tests using `@vscode/test-electron`.
+3.  Execute the selected test suite.
 
 ## Project Structure
 - `src/extension.ts`: The main entry point for the extension.
