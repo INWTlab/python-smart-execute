@@ -13,22 +13,18 @@ This is a VS Code extension called "Python Smart Execute" that intelligently sen
 - **Watch mode (auto-recompile)**: `npm run watch`
 - **Lint**: `npm run lint`
 - **Lint with auto-fix**: `npm run lint -- --fix`
-- **Run all tests**: `xvfb-run -a npm test` (requires xvfb package)
+- **Run all tests**: `npm run test:unit` (runs logic tests using Mocha directly; xvfb-run is unavailable in dev-container)
 - **Prepublish**: `npm run vscode:prepublish`
 
 ### Testing
-- **Unit tests (no display needed)**: `npm run test:unit` (runs logic tests using Mocha directly)
-- **Integration tests (requires display)**: `npm run test:integration` (requires xvfb or a window server)
-- **Full test suite**: `xvfb-run -a npm test` (compiles, lints, then runs integration tests)
-- **Single test execution**: Tests are compiled to JS, run individual tests with `xvfb-run -a node ./out/test/runTest.js`
-- **Test framework**: Mocha with TDD UI, tests located in `src/test/suite/**/*.test.ts`
-- **Test runner**: Uses `@vscode/test-electron` for integration testing, or direct Mocha for unit tests.
+ - **Compile & lint**: `npm run compile && npm run lint`
+ - **Unit tests**: `npm run test:unit` (runs logic tests with Mocha; integration tests require xvfb and are unavailable in dev-container)
 
 ### Development Workflow
 1. `npm install` - Install dependencies (includes xvfb for headless testing)
 2. `npm run watch` - Start watch mode during development
 3. Press `F5` in VS Code to launch Extension Development Host
-4. `xvfb-run -a npm test` - Run full test suite before committing
+4. `npm run test:unit` - Run unit tests during implementation (integration tests require xvfb and are unavailable in dev-container)
 
 ## Code Style Guidelines
 
@@ -143,31 +139,41 @@ async function main() {
 ```
 src/
 ├── extension.ts              # Main extension entry point
+├── navigation/               # Python block navigation module
+│   ├── blockFinder.ts       # Finds Python code blocks (functions, classes, if/elif/else)
+│   ├── blockNavigator.ts    # Navigation commands (jumpNextBlock, jumpPreviousBlock)
+│   └── multiLineStatement.ts # Multi-line statement handling
+├── smartExecute/             # Smart code selection and execution module
+│   ├── config.ts            # Configuration helpers
+│   ├── execution.ts         # REPL/Jupyter execution logic
+│   ├── selection.ts         # Smart code selection utilities
+│   └── helpers.ts           # Shared helper functions
 ├── test/
 │   ├── runTest.ts          # Test runner
+│   ├── runUnitTests.ts     # Unit test runner
 │   └── suite/
 │       ├── index.ts        # Test suite setup
-│       └── *.test.ts       # Individual test files
+│       ├── extension.test.ts
+│       ├── mocks.ts        # VS Code API mocks
+│       ├── smartExecute/   # Smart execution tests
+│       │   ├── selection.test.ts
+│       │   └── execution.test.ts
+│       ├── blockFinder.test.ts
+│       ├── blockNavigator.test.ts
+│       └── multiLineStatement.test.ts
 ├── package.json            # Extension manifest
 ├── tsconfig.json          # TypeScript config
 ├── eslint.config.mjs      # ESLint config
 └── DEVELOPMENT.md         # Development guide
 ```
 
-## Testing Guidelines
-
-### Test Patterns
-- Use Mocha TDD style (`suite`, `test`, `setup`, `teardown`)
-- Export functions that need testing from main files
-- Mock VS Code APIs when necessary (see `src/test/suite/mocks.ts`)
-- Test both happy path and edge cases
-
-### Test File Naming
-- Test files: `*.test.ts`
-- Mock files: `mocks.ts`
-- Test runner: `runTest.ts`, `index.ts`
-
 ## Extension Specific Patterns
+
+### Module Organization
+- **navigation/**: Python block navigation utilities (jump to next/previous code blocks)
+- **smartExecute/**: Smart code selection and execution logic
+- Functions are exported for testability
+- Tests colocated with modules in `src/test/suite/{module}/`
 
 ### VS Code Extension Development
 - Register commands in `activate` function using `context.subscriptions.push`
@@ -181,9 +187,14 @@ src/
 - Supports both Python REPL and Jupyter execution engines
 - Includes cursor stepping functionality after execution
 
+### Block Navigation
+- Commands: `pythonJumpNextBlock`, `pythonJumpPreviousBlock`
+- Handles multi-line statements (open parentheses, brackets)
+- Finds block boundaries (functions, classes, if/elif/else/try)
+
 ## Development Best Practices
 
-1. **Before committing**: Always run `xvfb-run -a npm test` (includes compile, lint, test)
+1. **Before committing**: Always run `npm run test:unit` (unit tests only; full suite requires xvfb and is unavailable in dev-container)
 2. **Use F5**: Launch Extension Development Host for testing
 3. **Follow existing patterns**: Codebase has consistent structure and style
 4. **Export for testing**: Make helper functions exportable for testability
@@ -194,8 +205,9 @@ src/
 ## VS Code Integration
 
 ### Key Bindings (Extension Contribution)
-- `Ctrl+Enter`: Main execution command (context-sensitive)
-- Debug mode: Uses debug console, Normal mode: Uses REPL/Jupyter
+- `Ctrl+Enter`: (Smart) Execute selection or line and step cursor
+- `Ctrl+Alt+Down`: Navigate to next code block
+- `Ctrl+Alt+Up`: Navigate to previous code block
 
 ### Extension Dependencies
 - `ms-python.python`: Python extension

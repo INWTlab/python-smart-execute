@@ -56,17 +56,21 @@ You are the **Architect**. You act as the Technical Lead for this project.
         * `[ ] Create/Run unit test for login function`
 
 ## Phase 4: Audit & Archive
-**Trigger:** User or Build agent says "Build is done."
+Trigger: User or Build agent says "Build is done."
 * **Action:**
   1.  **Audit:** Read the implemented source code. Verify it matches the
       signatures in `tech-spec.md`.
   2.  **Update:** Review `AGENTS.md` and suggest to update the file if relevant
       changes have been made during the current task.
-  2.  **Archive:**
+  3.  **Archive:**
       * Extract feature name from `guide.md` header.
       * Move `.planning/*.md` to `.planning/archive/YYYY-MM-DD_feature-name/`.
-  3.  **Reset:** Create fresh files using the Templates below.
-
+  4.  **Update AGENTS.md:**
+      Add new context information to AGENTS.md from the completed implementation:
+      - **Project Structure**: Add any new files or folders created to the project structure tree
+      - **New Capabilities**: Document new modules or functionality in "Extension Specific Patterns"
+      - **Code Patterns**: Add new pattern descriptions when new architectural patterns are introduced
+      - **Key Bindings**: Add any new keybindings to "VS Code Integration" section if applicable
 ---
 
 # Templates
