@@ -110,3 +110,56 @@ function newSelectionForLine(line: vscode.TextLine) {
 }
 
 export { isDecorator, isNotLastLine, lineIsCode };
+
+/**
+ * Find the end of a multi-line statement within given boundaries
+ * @param currentLine The line where cursor is positioned
+ * @param document The text document
+ * @param startLine The start line of the search boundary
+ * @param endLine The end line of the search boundary
+ * @returns The line where the multi-line statement ends, or undefined if not found
+ */
+export function findMultiLineStatement(
+    currentLine: vscode.TextLine,
+    document: vscode.TextDocument,
+    startLine: vscode.TextLine,
+    endLine: vscode.TextLine
+): vscode.TextLine | undefined {
+    let balance = 0;
+    let foundStart = false;
+    let resultLine: vscode.TextLine | undefined = undefined;
+
+    // Traverse from startLine to endLine to find the matching closing delimiter
+    for (let lineNumber = startLine.lineNumber; lineNumber <= endLine.lineNumber; lineNumber++) {
+        const line = document.lineAt(lineNumber);
+        const lineText = line.text;
+        
+        // Remove strings and comments to avoid false positives
+        const lineWithoutStringsOrComments = lineText
+            .replace(/#.*/g, '')
+            .replace(/".*?"/g, '')
+            .replace(/'.*?'/g, '');
+        
+        // Count opening brackets
+        const openBrackets = (lineWithoutStringsOrComments.match(/[([{]/g) || []).length;
+        
+        // Count closing brackets
+        const closeBrackets = (lineWithoutStringsOrComments.match(/[)]]}]/g) || []).length;
+        
+        // Update balance
+        balance += openBrackets - closeBrackets;
+        
+        // If we find the start of a multi-line statement
+        if (openBrackets > closeBrackets) {
+            foundStart = true;
+        }
+        
+        // If we've found the start and balance returns to 0, we've found the end
+        if (foundStart && balance === 0) {
+            resultLine = line;
+            break;
+        }
+    }
+    
+    return resultLine;
+}
