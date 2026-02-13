@@ -1,6 +1,8 @@
 ---
 name: Pinky
 description: Implementation agent. Executes the active plan, runs tests, and updates progress.
+model: mistral/devstral-2512
+temperature: 0.2
 tools:
   read_file: true
   search_files: true
