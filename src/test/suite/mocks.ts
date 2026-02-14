@@ -84,11 +84,11 @@ export class MockTextDocument implements vscode.TextDocument {
         return this.lines[index];
     }
 
-    offsetAt(position: vscode.Position): number {
+    offsetAt(_position: vscode.Position): number {
         return 0;
     }
 
-    positionAt(offset: number): vscode.Position {
+    positionAt(_offset: number): vscode.Position {
         return new vscode.Position(0, 0);
     }
 
@@ -99,7 +99,7 @@ export class MockTextDocument implements vscode.TextDocument {
         return this._content;
     }
 
-    getWordRangeAtPosition(position: vscode.Position | vscode.Position, regex?: RegExp): vscode.Range | undefined {
+    getWordRangeAtPosition(_position: vscode.Position | vscode.Position, _regex?: RegExp): vscode.Range | undefined {
         return undefined;
     }
 

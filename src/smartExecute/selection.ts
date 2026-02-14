@@ -112,6 +112,24 @@ function newSelectionForLine(line: vscode.TextLine) {
 export { isDecorator, isNotLastLine, lineIsCode };
 
 /**
+ * Remove strings and comments from a line of text
+ * @param lineText The text to process
+ * @returns Text with strings and comments removed
+ */
+function removeStringsAndComments(lineText: string): string {
+    // Remove comments
+    let result = lineText.replace(/#.*/g, '');
+    
+    // Remove double-quoted strings (non-greedy)
+    result = result.replace(/"[^"]*"/g, '');
+    
+    // Remove single-quoted strings (non-greedy)
+    result = result.replace(/'[^']*'/g, '');
+    
+    return result;
+}
+
+/**
  * Find the end of a multi-line statement within given boundaries
  * @param currentLine The line where cursor is positioned
  * @param document The text document
@@ -126,36 +144,62 @@ export function findMultiLineStatement(
     endLine: vscode.TextLine
 ): vscode.TextLine | undefined {
     let balance = 0;
-    let foundStart = false;
+    let inMultiLineStatement = false;
     let resultLine: vscode.TextLine | undefined = undefined;
 
-    // Traverse from startLine to endLine to find the matching closing delimiter
-    for (let lineNumber = startLine.lineNumber; lineNumber <= endLine.lineNumber; lineNumber++) {
+    // First pass: find the opening bracket that starts the multi-line statement
+    // We need to go backwards from currentLine to find where the statement started
+    for (let lineNumber = startLine.lineNumber; lineNumber <= currentLine.lineNumber; lineNumber++) {
         const line = document.lineAt(lineNumber);
         const lineText = line.text;
         
         // Remove strings and comments to avoid false positives
-        const lineWithoutStringsOrComments = lineText
-            .replace(/#.*/g, '')
-            .replace(/".*?"/g, '')
-            .replace(/'.*?'/g, '');
+        const lineWithoutStringsOrComments = removeStringsAndComments(lineText);
         
         // Count opening brackets
         const openBrackets = (lineWithoutStringsOrComments.match(/[([{]/g) || []).length;
         
         // Count closing brackets
-        const closeBrackets = (lineWithoutStringsOrComments.match(/[)]]}]/g) || []).length;
+        const closeBrackets = (lineWithoutStringsOrComments.match(/[)}\]\]]/g) || []).length;
         
-        // Update balance
         balance += openBrackets - closeBrackets;
         
-        // If we find the start of a multi-line statement
-        if (openBrackets > closeBrackets) {
-            foundStart = true;
+        // If we find unbalanced opening brackets, we're in a multi-line statement
+        if (balance > 0) {
+            inMultiLineStatement = true;
         }
+    }
+
+    // Special case: if cursor is already on the closing bracket, return it
+    const currentLineText = removeStringsAndComments(currentLine.text);
+    const currentCloseBrackets = (currentLineText.match(/[)}\]\]]/g) || []).length;
+    if (currentCloseBrackets > 0 && inMultiLineStatement) {
+        return currentLine;
+    }
+
+    // If we're not in a multi-line statement, return undefined
+    if (!inMultiLineStatement || balance <= 0) {
+        return undefined;
+    }
+
+    // Second pass: find where the statement ends (balance returns to 0)
+    for (let lineNumber = currentLine.lineNumber + 1; lineNumber <= endLine.lineNumber; lineNumber++) {
+        const line = document.lineAt(lineNumber);
+        const lineText = line.text;
         
-        // If we've found the start and balance returns to 0, we've found the end
-        if (foundStart && balance === 0) {
+        // Remove strings and comments to avoid false positives
+        const lineWithoutStringsOrComments = removeStringsAndComments(lineText);
+        
+        // Count opening brackets
+        const openBrackets = (lineWithoutStringsOrComments.match(/[([{]/g) || []).length;
+        
+        // Count closing brackets
+        const closeBrackets = (lineWithoutStringsOrComments.match(/[)}\]\]]/g) || []).length;
+        
+        balance += openBrackets - closeBrackets;
+        
+        // If balance returns to 0, we've found the end
+        if (balance === 0) {
             resultLine = line;
             break;
         }

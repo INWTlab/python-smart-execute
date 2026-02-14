@@ -31,7 +31,12 @@ export class Selection extends Range {
     constructor(anchorLine: number, anchorChar: number, activeLine: number, activeChar: number);
     constructor(anchor: Position, active: Position);
     constructor(arg1: number | Position, arg2: number | Position, arg3?: number, arg4?: number) {
-        super(arg1 as any, arg2 as any, arg3 as any, arg4 as any);
+        super(
+            typeof arg1 === 'number' ? arg1 : arg1.line,
+            typeof arg1 === 'number' ? (arg2 as number) : arg1.character,
+            arg3 ?? 0,
+            arg4 ?? 0
+        );
         this.anchor = this.start;
         this.active = this.end;
     }
@@ -39,12 +44,12 @@ export class Selection extends Range {
 
 export const window = {
     showInformationMessage: () => Promise.resolve(''),
-    activeTextEditor: undefined as any
+    activeTextEditor: undefined
 };
 
 export const workspace = {
     getConfiguration: () => ({
-        get: (key: string) => undefined,
+        get: (_key: string) => undefined,
         smartExecute: {
             blockSelect: true,
             engine: 'python',

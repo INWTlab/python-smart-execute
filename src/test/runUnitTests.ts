@@ -4,14 +4,14 @@ import { glob } from 'glob';
 
 // Mock the vscode module before anything else
 // Using a relative path that works both in src/ and out/
-const vscodeMock = require('./suite/vscode.mock');
-const Module = require('module');
+import * as vscodeMock from './suite/vscode.mock';
+import { Module } from 'module';
 const originalRequire = Module.prototype.require;
-Module.prototype.require = function(name: string) {
-	if (name === 'vscode') {
+Module.prototype.require = function(id: string) {
+	if (id === 'vscode') {
 		return vscodeMock;
 	}
-	return originalRequire.apply(this, arguments);
+	return originalRequire.call(this, id);
 };
 
 async function main() {
