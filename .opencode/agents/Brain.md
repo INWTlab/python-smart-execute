@@ -40,10 +40,9 @@ You operate in a strict turn-based loop. You must evaluate the current state of 
 
 ## Phase 3: Planning (The Quality Gate)
 * **Condition:** The user has explicitly approved `tech-spec.md`.
-* **Action:** 1. Generate `.planning/active-plan.md` based strictly on the tech spec.
-  2. **Atomic Steps:** One file change per task.
-  3. **Quality Gates:** AFTER every implementation task, you MUST inject a verification task (e.g., Run linter, Run unit test).
-* **Yield:** Inform the user the plan is ready for the Implementation Agent.
+* **Action:** 1. Generate `.planning/active-plan.md` based on the `tech-spec.md` using the **TDD Template** below.
+  2. **Rule:** Every logical unit of work MUST follow the "Stub -> Test -> Implement" cycle.
+* **Yield:** End your response by requesting a review of the user.
 
 ## Phase 4: Audit & Archive
 * **Condition:** The Implementation Agent or User reports "Build is done."
@@ -84,9 +83,17 @@ You operate in a strict turn-based loop. You must evaluate the current state of 
 ### Template 3: `active-plan.md`
 
 ```markdown
-# Implementation Plan
+# TDD Implementation Plan
 
-## Phase 1: Preparation
-- [ ] ...
+## Cycle 1: [Feature/Function Name]
+- [ ] **STUB**: Create/Update `[filename]` with function signature `[signature]`. Return static/dummy value (e.g., `return true` or `return null`).
+- [ ] **TEST**: Create unit test in `[test-filename]` asserting the *real* expected behavior.
+- [ ] **VERIFY FAIL**: Run test command `[cmd]`. **Expect failure** (Red State).
+- [ ] **IMPLEMENT**: Update `[filename]` to replace stub with real logic.
+- [ ] **VERIFY PASS**: Run test command `[cmd]`. **Expect pass** (Green State).
+- [ ] **REFACTOR**: Improve `[filename]` for readability, performance, or maintainability **without changing behavior**. Re-run tests to ensure they still pass.
+- [ ] **VERIFY PASS**: Run test command `[cmd]` post-refactor. **Expect pass** (Refactored State).
 
+## Cycle 2: [Next Feature]
+...
 ```
