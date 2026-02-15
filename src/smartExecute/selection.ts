@@ -12,9 +12,20 @@ import {
 } from './helpers';
 import { getConfigSmartExecute } from './config';
 
+/**
+ * Checks if a selection is empty, with fallback for environments where isEmpty is undefined
+ * @param selection The selection to check
+ * @returns true if the selection is empty
+ */
+export function isSelectionEmpty(selection: vscode.Selection): boolean {
+    return selection.isEmpty !== undefined ? selection.isEmpty : 
+           (selection.start.line === selection.end.line && 
+            selection.start.character === selection.end.character);
+}
+
 export function smartSelect(editor: vscode.TextEditor): string {
     let selection = '';
-    if (editor.selection.isEmpty) {
+    if (isSelectionEmpty(editor.selection)) {
         const line = editor.document.lineAt(editor.selection.active.line);
         if (getConfigSmartExecute()) {
             const endLine = findEndLineOfPythonCodeBlock(line, editor.document);

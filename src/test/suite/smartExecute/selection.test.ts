@@ -16,11 +16,6 @@ suite('Smart Select Logic Test Suite', () => {
         assert.ok(findNextCodeLine, 'findNextCodeLine is not exported');
     });
 
-    test('isDecorator basic', () => {
-        assert.strictEqual(isDecorator('@dataclass'), true);
-        assert.strictEqual(isDecorator('def foo():'), false);
-    });
-
     suite('Decorator Tests', () => {
         test('Single decorator before function', () => {
             const content = '@timer\ndef some_function(x):\n    return x\n';
@@ -233,65 +228,5 @@ suite('Smart Select Logic Test Suite', () => {
         });
     });
 
-    suite('Stepping Logic Tests', () => {
-        test('Skip decorators when finding next code line', () => {
-            const content = 'x = 1\n\n@timer\ndef another_function():\n    pass\n';
-            const doc = new MockTextDocument(content);
 
-            const firstLine = doc.lineAt(0);
-            const nextLine = findNextCodeLine(firstLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 3, 'Should skip @timer decorator and find def');
-        });
-
-        test('Skip decorators when finding next code line (from function)', () => {
-            const content = 'def some_function():\n    pass\n\n@timer\ndef another_function():\n    pass\n';
-            const doc = new MockTextDocument(content);
-
-            const firstFunctionLine = doc.lineAt(1);
-            const nextLine = findNextCodeLine(firstFunctionLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 4, 'Should skip @timer decorator and find def');
-        });
-
-        test('Skip comments when finding next code line', () => {
-            const content = 'x = 1\n# This is a comment\n# Another comment\ny = 2\n';
-            const doc = new MockTextDocument(content);
-
-            const firstLine = doc.lineAt(0);
-            const nextLine = findNextCodeLine(firstLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 3, 'Should skip comments and find y = 2');
-        });
-
-        test('Handle empty lines and whitespace', () => {
-            const content = 'x = 1\n\n   \n\t\ny = 2\n';
-            const doc = new MockTextDocument(content);
-
-            const firstLine = doc.lineAt(0);
-            const nextLine = findNextCodeLine(firstLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 4, 'Should skip empty and whitespace lines');
-        });
-
-        test('Return last line if no next code found', () => {
-            const content = 'x = 1\n\n# comment\n# comment\n';
-            const doc = new MockTextDocument(content);
-
-            const firstLine = doc.lineAt(0);
-            const nextLine = findNextCodeLine(firstLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 4, 'Should return last line if no next code found');
-        });
-
-        test('Find next line in complex scenario', () => {
-            const content = 'x = 1\n\n@decorator1\n@decorator2\ndef func2():\n    pass\n\n# comment\n\nz = 5\n';
-            const doc = new MockTextDocument(content);
-
-            const firstLine = doc.lineAt(0);
-            const nextLine = findNextCodeLine(firstLine, doc);
-
-            assert.strictEqual(nextLine.lineNumber, 4, 'Should skip empty lines and decorators');
-        });
-    });
 });

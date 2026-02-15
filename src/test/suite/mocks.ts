@@ -96,7 +96,22 @@ export class MockTextDocument implements vscode.TextDocument {
         if (!range) {
             return this._content;
         }
-        return this._content;
+        const lines = this._content.split('\n');
+        const startLine = range.start.line;
+        const endLine = range.end.line;
+        const startChar = range.start.character;
+        const endChar = range.end.character;
+        
+        if (startLine === endLine) {
+            return lines[startLine].substring(startChar, endChar);
+        }
+        
+        let result = lines[startLine].substring(startChar) + '\n';
+        for (let i = startLine + 1; i < endLine; i++) {
+            result += lines[i] + '\n';
+        }
+        result += lines[endLine].substring(0, endChar);
+        return result;
     }
 
     getWordRangeAtPosition(_position: vscode.Position | vscode.Position, _regex?: RegExp): vscode.Range | undefined {
@@ -125,5 +140,74 @@ export class MockTextDocument implements vscode.TextDocument {
 
     save(): Thenable<boolean> {
         return Promise.resolve(true);
+    }
+}
+
+export class MockTextEditor implements vscode.TextEditor {
+    document: vscode.TextDocument;
+    selection: vscode.Selection;
+    
+    constructor(document: vscode.TextDocument) {
+        this.document = document;
+        this.selection = new vscode.Selection(0, 0, 0, 0);
+    }
+    
+    setSelection(selection: vscode.Selection): void {
+        this.selection = selection;
+    }
+    
+    // Stub implementations for required methods
+    edit(_callback: (editBuilder: vscode.TextEditorEdit) => void): Thenable<boolean> {
+        return Promise.resolve(true);
+    }
+    
+    insertSnippet(_snippet: vscode.SnippetString, _location?: vscode.Position | vscode.Range | vscode.Position[] | vscode.Range[], _options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Thenable<boolean> {
+        return Promise.resolve(true);
+    }
+    
+    setDecorations(_decorationType: vscode.TextEditorDecorationType, _rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
+        // No-op
+    }
+    
+    revealRange(_range: vscode.Range, _revealType?: vscode.TextEditorRevealType): void {
+        // No-op
+    }
+    
+    show(_column?: vscode.ViewColumn): void {
+        // No-op
+    }
+    
+    hide(): void {
+        // No-op
+    }
+    
+    get visibleRanges(): vscode.Range[] {
+        return [new vscode.Range(0, 0, this.document.lineCount - 1, 0)];
+    }
+    
+    get selections(): vscode.Selection[] {
+        return [this.selection];
+    }
+    
+    setSelections(selections: vscode.Selection[]): void {
+        if (selections.length > 0) {
+            this.selection = selections[0];
+        }
+    }
+    
+    get options(): vscode.TextEditorOptions {
+        return {
+            tabSize: 4,
+            insertSpaces: true,
+            // Add other default options as needed
+        } as vscode.TextEditorOptions;
+    }
+    
+    setOptions(_options: vscode.TextEditorOptions): Thenable<void> {
+        return Promise.resolve();
+    }
+    
+    get viewColumn(): vscode.ViewColumn | undefined {
+        return vscode.ViewColumn.One;
     }
 }

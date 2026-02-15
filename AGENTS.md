@@ -19,6 +19,7 @@ This is a VS Code extension called "Python Smart Execute" that intelligently sen
 ### Testing
  - **Compile & lint**: `npm run compile && npm run lint`
  - **Unit tests**: `npm run test:unit` (runs logic tests with Mocha; integration tests require xvfb and are unavailable in dev-container)
+ - **Test structure**: Behavior-driven tests (e.g., `smartSelect.test.ts`) and unit tests (e.g., `selectionUtils.test.ts`) are colocated with implementation code in `src/test/suite/{module}/`
 
 ### Development Workflow
 1. `npm install` - Install dependencies (includes xvfb for headless testing)
@@ -156,7 +157,9 @@ src/
 │       ├── extension.test.ts
 │       ├── mocks.ts        # VS Code API mocks
 │       ├── smartExecute/   # Smart execution tests
-│       │   ├── selection.test.ts
+│       │   ├── selection.test.ts          # Implementation tests for selection utilities
+│       │   ├── selectionUtils.test.ts     # Unit tests for utility functions
+│       │   ├── smartSelect.test.ts        # Behavior-driven tests for smartSelect
 │       │   └── execution.test.ts
 │       ├── blockFinder.test.ts
 │       ├── blockNavigator.test.ts
@@ -184,8 +187,15 @@ src/
 ### Code Selection and Execution
 - Extension intelligently selects Python code blocks
 - Handles decorators, indentation, and code block boundaries
+- Supports multi-line statements (dictionaries, function calls, nested brackets)
 - Supports both Python REPL and Jupyter execution engines
 - Includes cursor stepping functionality after execution
+- **SmartSelect Behavior**:
+  - Single line selection when smart selection is disabled
+  - Function/class selection with decorators
+  - Control flow selection (if/elif/else, try/except/finally)
+  - Multi-block document handling (targets specific blocks)
+  - Edge case handling (comments, empty lines, whitespace)
 
 ### Block Navigation
 - Commands: `pythonJumpNextBlock`, `pythonJumpPreviousBlock`
