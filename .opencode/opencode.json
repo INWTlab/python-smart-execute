@@ -3,5 +3,5 @@
     // "theme": "opencode",
     // "model": "anthropic/claude-sonnet-4-5",
     "autoupdate": true,
-    "plugin": ["@tarquinen/opencode-dcp@latest"]
+    "plugin": ["@tarquinen/opencode-dcp@latest", "opencode-gemini-auth@latest"]
 }

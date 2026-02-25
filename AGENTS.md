@@ -212,6 +212,132 @@ src/
 6. **Error handling**: Always handle async errors gracefully
 7. **Type safety**: Maintain strict TypeScript compliance
 
+---
+
+## Test-Specific String Formatting and Comparison
+
+### 1. Multiline String Formatting in Tests
+When defining multiline strings for test cases, use **template literals** (`` ` ``) to preserve exact formatting, including indentation, line breaks, and whitespace. This is critical for testing Python code selection logic, where formatting directly impacts behavior.
+
+#### Examples:
+- **Template Literals for Python Code Blocks**:
+  ```typescript
+  const pythonCode = `
+  @decorator
+  def example_function():
+      if True:
+          print("Hello, world!")
+  `;
+  ```
+  This ensures that indentation and line breaks are preserved exactly as written.
+
+- **Handling Edge Cases**:
+  Use template literals to define strings with mixed indentation or empty lines:
+  ```typescript
+  const mixedIndentation = `
+  def example():
+      if True:
+          print("Indented")
+      print("Not indented")
+  `;
+  ```
+
+---
+
+### 2. String Comparison Best Practices
+#### Choosing the Right Assertion
+- **Use `assert.strictEqual`** for string comparisons to ensure both content and type are validated.
+  ```typescript
+  assert.strictEqual(actualSelection, expectedSelection);
+  ```
+- **Avoid `assert.equal`** unless you explicitly want loose equality checks.
+
+#### Handling Whitespace and Newlines
+- Preserve whitespace and newlines in test strings, as they are critical for Python code selection logic.
+- **Trailing Newlines**: Be explicit about including or excluding trailing newlines in the expected string. Mismatches will cause test failures.
+
+#### Debugging Mismatches
+- Log `actual` and `expected` values with escape characters when assertions fail to debug mismatches:
+  ```typescript
+  console.log(`Expected: ${JSON.stringify(expectedSelection)}`);
+  console.log(`Actual: ${JSON.stringify(actualSelection)}`);
+  ```
+
+---
+
+### 3. Mock Data Construction
+#### Constructing Mock Content
+- Use the `MockTextDocument` class (defined in `mocks.ts`) to simulate VS Code's `TextDocument` API for testing.
+- Define mock content using template literals to ensure consistency with real-world scenarios:
+  ```typescript
+  const mockDocument = new MockTextDocument(`
+  @decorator
+  def example_function():
+      print("Hello, world!")
+  `);
+  ```
+
+#### Guidelines for `expectedSelection`
+- Define `expectedSelection` strings using template literals to match the exact formatting of the expected output:
+  ```typescript
+  const expectedSelection = `
+  @decorator
+  def example_function():
+      print("Hello, world!")
+  `;
+  ```
+- Ensure mock content mirrors real-world scenarios, such as:
+  - Python functions with decorators.
+  - Multi-line statements (e.g., dictionaries, function calls).
+  - Edge cases like empty lines or mixed indentation.
+
+---
+
+### 4. Test Case Structure for String-Heavy Logic
+#### Structuring Test Cases
+- Group test cases by scenario (e.g., "should select a function with decorators," "should handle multi-line statements").
+- Use descriptive test names to clarify the expected behavior:
+  ```typescript
+  test("should select a function with decorators", () => { ... });
+  test("should handle multi-line statements", () => { ... });
+  ```
+
+#### Helper Functions for String Comparison
+- While exact string matching is preferred, you can define helper functions to simplify comparisons for complex cases:
+  ```typescript
+  function normalizeWhitespace(text: string): string {
+      return text.replace(/\s+/g, " ").trim();
+  }
+  ```
+  Use this sparingly, as it may mask formatting issues in Python code.
+
+#### Example Test Case
+```typescript
+test("should select a function with decorators", () => {
+    const document = new MockTextDocument(`
+    @decorator
+    def example_function():
+        print("Hello, world!")
+    `);
+    const selection = smartSelect(document, new vscode.Position(2, 0));
+    const expectedSelection = `
+    @decorator
+    def example_function():
+        print("Hello, world!")
+    `;
+    assert.strictEqual(selection, expectedSelection);
+});
+```
+
+---
+
+### Key Takeaways
+1. **Use template literals** for multiline strings to preserve exact formatting.
+2. **Prefer `assert.strictEqual`** for string comparisons to ensure precision.
+3. **Log escape characters** when debugging mismatches to identify whitespace or newline issues.
+4. **Construct mock data** using `MockTextDocument` and template literals to mirror real-world scenarios.
+5. **Structure test cases** to validate multiline string outputs, grouping them by scenario for clarity.
+
 ## VS Code Integration
 
 ### Key Bindings (Extension Contribution)
