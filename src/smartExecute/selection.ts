@@ -83,18 +83,24 @@ export function findEndLineOfPythonCodeBlock(line: vscode.TextLine, document: vs
     while (isNotLastLine(line.lineNumber + 1, document.lineCount)) {
         line = document.lineAt(line.lineNumber + 1);
         if (lineIsCode(line)) {
-            if (
-                levelOfIndentation(line.text) <= rootIndentation &&
-                !isExcept(line.text) &&
-                !isFinally(line.text) &&
-                !isElif(line.text) &&
-                !isElse(line.text) &&
-                !isClosingParanthesis(line.text)
-            ) {
+            const currentIndentation = levelOfIndentation(line.text);
+            
+            if (currentIndentation < rootIndentation) {
                 break;
-            } else {
-                finalLine = line;
             }
+            
+            if (currentIndentation === rootIndentation) {
+                const isPartOfBlock = isExcept(line.text) ||
+                                      isFinally(line.text) ||
+                                      isElif(line.text) ||
+                                      isElse(line.text) ||
+                                      isClosingParanthesis(line.text);
+                if (!isPartOfBlock) {
+                    break;
+                }
+            }
+            
+            finalLine = line;
         }
     }
     return finalLine;

@@ -279,5 +279,19 @@ suite('SmartSelect Behavior Test Suite', () => {
             assert.strictEqual(editor.selection.end.line, 8);
             assert.strictEqual(selectedText, expectedSelection);
         });
+
+        test('Multiline Statement Inside If Block', () => {
+            const content = 'if True:\n    my_list = [\n        1,\n        2\n    ]\nelse:\n    pass';
+            const expectedSelection = '    my_list = [\n        1,\n        2\n    ]';
+            const doc = new MockTextDocument(content);
+            const editor = new MockTextEditor(doc);
+            editor.selection = new vscode.Selection(1, 0, 1, 0); // Cursor on my_list = [
+            
+            const selectedText = smartSelect(editor);
+            
+            assert.strictEqual(editor.selection.start.line, 1);
+            assert.strictEqual(editor.selection.end.line, 4);
+            assert.strictEqual(selectedText, expectedSelection);
+        });
     });
 });;
