@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import {
     isDecorator,
     findNextCodeLine,
-    findMultiLineStatement,
+    getMultilineStatementRange,
     isSelectionEmpty
 } from '../../../smartExecute/selection';
 import { MockTextDocument } from '../mocks';
@@ -85,44 +85,80 @@ suite('Selection Utils Test Suite', () => {
         });
     });
 
-    suite('findMultiLineStatement Tests', () => {
-        test('findMultiLineStatement basic', () => {
-            const content = 'data = {\n    "key1": "value1",\n    "key2": "value2"\n}\nprint("done")';
+    suite('getMultilineStatementRange Tests', () => {
+        test('Single line returns undefined', () => {
+            const content = 'x = 1\ny = 2\nz = 3';
             const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(1); // Inside the dictionary
-            const startLine = doc.lineAt(0); // Start of dictionary
-            const endLine = doc.lineAt(3); // End of dictionary
+            const currentLine = doc.lineAt(1);
             
-            const result = findMultiLineStatement(currentLine, doc, startLine, endLine);
-            
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.lineNumber, 3);
-        });
-
-        test('findMultiLineStatement with nested brackets', () => {
-            const content = 'result = {\n    "outer": {\n        "inner": [1, 2, 3]\n    }\n}\nprint("done")';
-            const doc = new MockTextDocument(content);
-            
-            const currentLine = doc.lineAt(2); // Inside nested structure
-            const startLine = doc.lineAt(0); // Start of dictionary
-            const endLine = doc.lineAt(5); // End of dictionary
-            
-            const result = findMultiLineStatement(currentLine, doc, startLine, endLine);
-            
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.lineNumber, 2); // Current line has closing bracket, so it returns immediately
-        });
-
-        test('findMultiLineStatement returns undefined for single line', () => {
-            const content = 'x = {"key": "value"}\nprint("done")';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(0); // Single line dictionary
-            const startLine = doc.lineAt(0);
-            const endLine = doc.lineAt(1);
-            
-            const result = findMultiLineStatement(currentLine, doc, startLine, endLine);
-            
+            const result = getMultilineStatementRange(currentLine, doc);
             assert.strictEqual(result, undefined);
+        });
+
+        test('Cursor on opening line', () => {
+            const content = 'x = (\n    1 + 2\n)';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(0);
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 0);
+            assert.strictEqual(result.endLine.lineNumber, 2);
+        });
+
+        test('Cursor on middle line', () => {
+            const content = 'x = (\n    1 + 2\n)';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(1);
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 0);
+            assert.strictEqual(result.endLine.lineNumber, 2);
+        });
+
+        test('Cursor on closing line', () => {
+            const content = 'x = (\n    1 + 2\n)';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(2);
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 0);
+            assert.strictEqual(result.endLine.lineNumber, 2);
+        });
+
+        test('Nested brackets', () => {
+            const content = 'result = my_function(\n    [\n        1, 2,\n        3\n    ],\n    {"key": "value"}\n)';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(2); // Inside the list
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 0);
+            assert.strictEqual(result.endLine.lineNumber, 6);
+        });
+
+        test('Strings and comments with brackets', () => {
+            const content = 'text = (\n    "This is a string with (parentheses)"\n    # This is a comment with [brackets]\n)';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(1);
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 0);
+            assert.strictEqual(result.endLine.lineNumber, 3);
+        });
+
+        test('Multiple independent statements', () => {
+            const content = 'first_list = [\n    1,\n    2\n]\n\nsecond_list = [\n    3,\n    4\n]';
+            const doc = new MockTextDocument(content);
+            const currentLine = doc.lineAt(6); // Inside second_list
+            
+            const result = getMultilineStatementRange(currentLine, doc);
+            assert.ok(result !== undefined);
+            assert.strictEqual(result.startLine.lineNumber, 5);
+            assert.strictEqual(result.endLine.lineNumber, 8);
         });
     });
 

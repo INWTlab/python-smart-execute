@@ -196,6 +196,7 @@ src/
   - Control flow selection (if/elif/else, try/except/finally)
   - Multi-block document handling (targets specific blocks)
   - Edge case handling (comments, empty lines, whitespace)
+  - Multiline statement detection (brackets, parentheses, braces) using bracket balance tracking
 
 ### Block Navigation
 - Commands: `pythonJumpNextBlock`, `pythonJumpPreviousBlock`

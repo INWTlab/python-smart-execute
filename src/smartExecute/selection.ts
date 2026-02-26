@@ -28,8 +28,16 @@ export function smartSelect(editor: vscode.TextEditor): string {
     if (isSelectionEmpty(editor.selection)) {
         const line = editor.document.lineAt(editor.selection.active.line);
         if (getConfigSmartExecute()) {
-            const endLine = findEndLineOfPythonCodeBlock(line, editor.document);
-            const startLine = findStartLineOfPythonCodeBlock(line, editor.document);
+            const multilineRange = getMultilineStatementRange(line, editor.document);
+            const targetLine = multilineRange ? multilineRange.startLine : line;
+            
+            const startLine = findStartLineOfPythonCodeBlock(targetLine, editor.document);
+            let endLine = findEndLineOfPythonCodeBlock(targetLine, editor.document);
+            
+            if (multilineRange && endLine.lineNumber < multilineRange.endLine.lineNumber) {
+                endLine = multilineRange.endLine;
+            }
+            
             editor.selection = newSelectionForBlock(startLine, endLine);
         } else {
             editor.selection = newSelectionForLine(line);
@@ -128,93 +136,59 @@ export { isDecorator, isNotLastLine, lineIsCode };
  * @returns Text with strings and comments removed
  */
 function removeStringsAndComments(lineText: string): string {
-    // Remove comments
     let result = lineText.replace(/#.*/g, '');
-    
-    // Remove double-quoted strings (non-greedy)
     result = result.replace(/"[^"]*"/g, '');
-    
-    // Remove single-quoted strings (non-greedy)
     result = result.replace(/'[^']*'/g, '');
-    
     return result;
 }
 
 /**
- * Find the end of a multi-line statement within given boundaries
+ * Find the start and end lines of a multiline statement that the current line is part of.
  * @param currentLine The line where cursor is positioned
  * @param document The text document
- * @param startLine The start line of the search boundary
- * @param endLine The end line of the search boundary
- * @returns The line where the multi-line statement ends, or undefined if not found
+ * @returns The start and end lines of the multiline statement, or undefined if not found
  */
-export function findMultiLineStatement(
+export function getMultilineStatementRange(
     currentLine: vscode.TextLine,
-    document: vscode.TextDocument,
-    startLine: vscode.TextLine,
-    endLine: vscode.TextLine
-): vscode.TextLine | undefined {
-    let balance = 0;
-    let inMultiLineStatement = false;
-    let resultLine: vscode.TextLine | undefined = undefined;
+    document: vscode.TextDocument
+): { startLine: vscode.TextLine; endLine: vscode.TextLine } | undefined {
+    const balances: number[] = [];
+    let currentBalance = 0;
 
-    // First pass: find the opening bracket that starts the multi-line statement
-    // We need to go backwards from currentLine to find where the statement started
-    for (let lineNumber = startLine.lineNumber; lineNumber <= currentLine.lineNumber; lineNumber++) {
-        const line = document.lineAt(lineNumber);
-        const lineText = line.text;
+    for (let i = 0; i < document.lineCount; i++) {
+        const lineText = document.lineAt(i).text;
+        const cleanText = removeStringsAndComments(lineText);
         
-        // Remove strings and comments to avoid false positives
-        const lineWithoutStringsOrComments = removeStringsAndComments(lineText);
+        const openBrackets = (cleanText.match(/[([{]/g) || []).length;
+        const closeBrackets = (cleanText.match(/[)}\]]/g) || []).length;
         
-        // Count opening brackets
-        const openBrackets = (lineWithoutStringsOrComments.match(/[([{]/g) || []).length;
-        
-        // Count closing brackets
-        const closeBrackets = (lineWithoutStringsOrComments.match(/[)}\]\]]/g) || []).length;
-        
-        balance += openBrackets - closeBrackets;
-        
-        // If we find unbalanced opening brackets, we're in a multi-line statement
-        if (balance > 0) {
-            inMultiLineStatement = true;
+        currentBalance += openBrackets - closeBrackets;
+        if (currentBalance < 0) {
+            currentBalance = 0;
         }
+        balances.push(currentBalance);
     }
 
-    // Special case: if cursor is already on the closing bracket, return it
-    const currentLineText = removeStringsAndComments(currentLine.text);
-    const currentCloseBrackets = (currentLineText.match(/[)}\]\]]/g) || []).length;
-    if (currentCloseBrackets > 0 && inMultiLineStatement) {
-        return currentLine;
-    }
+    const L = currentLine.lineNumber;
+    const prevBalance = L > 0 ? balances[L - 1] : 0;
+    const currBalance = balances[L];
 
-    // If we're not in a multi-line statement, return undefined
-    if (!inMultiLineStatement || balance <= 0) {
-        return undefined;
-    }
-
-    // Second pass: find where the statement ends (balance returns to 0)
-    for (let lineNumber = currentLine.lineNumber + 1; lineNumber <= endLine.lineNumber; lineNumber++) {
-        const line = document.lineAt(lineNumber);
-        const lineText = line.text;
-        
-        // Remove strings and comments to avoid false positives
-        const lineWithoutStringsOrComments = removeStringsAndComments(lineText);
-        
-        // Count opening brackets
-        const openBrackets = (lineWithoutStringsOrComments.match(/[([{]/g) || []).length;
-        
-        // Count closing brackets
-        const closeBrackets = (lineWithoutStringsOrComments.match(/[)}\]\]]/g) || []).length;
-        
-        balance += openBrackets - closeBrackets;
-        
-        // If balance returns to 0, we've found the end
-        if (balance === 0) {
-            resultLine = line;
-            break;
+    if (prevBalance > 0 || currBalance > 0) {
+        let startLineNum = L;
+        while (startLineNum > 0 && balances[startLineNum - 1] > 0) {
+            startLineNum--;
         }
+
+        let endLineNum = L;
+        while (endLineNum < document.lineCount - 1 && balances[endLineNum] > 0) {
+            endLineNum++;
+        }
+
+        return {
+            startLine: document.lineAt(startLineNum),
+            endLine: document.lineAt(endLineNum)
+        };
     }
-    
-    return resultLine;
+
+    return undefined;
 }
