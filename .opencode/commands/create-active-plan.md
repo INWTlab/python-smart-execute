@@ -67,15 +67,17 @@ Technical specification from `.planning/tech-spec.md`
    - For features: Are stubs simple and correct?
 
 5. **Clarify Ambiguities**: If anything is unclear:
-   - Ask about cycle breakdown
-   - Confirm test file locations
-   - Discuss refactoring opportunities
+   - Use the question tool to ask about cycle breakdown with specific options
+   - Use the question tool to confirm test file locations with discovered locations as options
+   - Use the question tool to discuss refactoring opportunities with concrete suggestions
 
 **Final Action:**
 
-Ask the user: "Should I create `.planning/active-plan.md` with this content?"
-
-If yes, delegate file creation to the @general agent.
+Use the question tool to ask: "Should I create `.planning/active-plan.md` with this content?"
+- Options: ["Yes, create it (Recommended)", "No, refine first", "Show me the plan first"]
+- If "Yes, create it": Delegate file creation to the @general agent
+- If "No, refine first": Gather feedback using the question tool and update the plan
+- If "Show me the plan first": Display the plan and then ask again
 
 **Quality Checklist:**
 - [ ] Correct template used (TDD vs Red-Green-Refactor)

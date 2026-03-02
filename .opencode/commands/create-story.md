@@ -71,19 +71,21 @@ $ARGUMENTS
    - Is it clear WHAT needs to be done (not HOW)?
 
 4. **Clarify Ambiguities**: If the input is unclear or could have multiple interpretations:
-   - Present 2-3 specific interpretations
-   - Show code examples for each interpretation
-   - Ask the user to select or provide more detail
+   - Use the question tool to present 2-3 specific interpretations as options
+   - Include code examples in the option descriptions
+   - Allow user to select an interpretation or type their own answer
 
 5. **Request Missing Examples**: If scenarios are underspecified:
-   - Suggest specific example scenarios based on codebase patterns
-   - Provide options for the user to choose from
-   - Include edge cases you've identified from similar features
+   - Use the question tool to suggest specific example scenarios as options
+   - Include edge cases in option descriptions
+   - Enable multiple selection if needed
 
 6. **Update and Refine**: Incorporate user feedback into the story
 
 **Final Action:**
 
-Ask the user: "Should I create `.planning/story.md` with this content?"
-
-If yes, delegate file creation to the @general agent.
+Use the question tool to ask: "Should I create `.planning/story.md` with this content?"
+- Options: ["Yes, create it (Recommended)", "No, refine first", "Show me the content first"]
+- If "Yes, create it": Delegate file creation to the @general agent
+- If "No, refine first": Gather feedback using the question tool and update the story
+- If "Show me the content first": Display the story and then ask again

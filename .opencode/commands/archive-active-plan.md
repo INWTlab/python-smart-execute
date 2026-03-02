@@ -15,7 +15,7 @@ Archive completed planning documents to preserve implementation history and upda
 
 2. Check completion status:
    - All checkboxes in `active-plan.md` are marked `[x]`
-   - If incomplete: **STOP** and ask user for confirmation
+   - If incomplete: **STOP** and use the question tool with options: ["Proceed anyway", "Cancel archival"]
 
 **Action:**
 
@@ -72,7 +72,7 @@ Archive completed planning documents to preserve implementation history and upda
 
 **Error Handling:**
 
-- If required files missing: Ask user which files to archive
+- If required files missing: Use the question tool to list available files and ask which to archive (enable multiple selection)
 - If archive directory exists: Append version number
 - If AGENTS.md update fails: Warn user but don't block archive
 

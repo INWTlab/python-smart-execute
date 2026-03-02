@@ -78,10 +78,10 @@ Implementation plan from `.planning/active-plan.md`
      - Report completion to user
      - Continue to next cycle
    
-   - **FAILURE**:
-     - Keep cycle as `in_progress`
-     - Report error to user
-     - Ask user for guidance before retrying
+    - **FAILURE**:
+      - Keep cycle as `in_progress`
+      - Report error to user
+      - Use the question tool with options: ["Retry this cycle", "Skip and continue", "Stop execution"]
    
    **d. Sync State After Each Cycle**
    
@@ -117,7 +117,7 @@ Implementation plan from `.planning/active-plan.md`
 
 - **No active-plan.md**: Report "No implementation plan found. Run `/create-active-plan` first."
 - **All cycles complete**: Report "All cycles in active-plan are complete!"
-- **Sub-agent failure**: Report error, ask user for guidance
+- **Sub-agent failure**: Report error, use the question tool with options: ["Retry this cycle", "Skip and continue", "Stop execution"]
 - **Missing tech spec**: STOP - sub-agent cannot proceed without specifications
 
 **Important Rules:**
