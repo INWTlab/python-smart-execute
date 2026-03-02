@@ -91,19 +91,21 @@ User story from `.planning/story.md`
    - Is there a clear decision on external dependencies?
    - Are design decisions documented with rationale?
 
-4. **Clarify Ambiguities**: If anything is unclear:
-   - Ask about implementation approach
-   - Discuss external library vs internal implementation
-   - Clarify edge case handling
-   - Confirm design decisions
+4. **Clarify Ambiguities**: If anything is unclear, use the question tool to gather clarification:
+   - **Implementation approach**: Use question tool with options for different approaches
+   - **External library vs internal**: Use question tool to discuss build vs buy decisions
+   - **Edge case handling**: Use question tool to confirm which edge cases to prioritize
+   - **Design decisions**: Use question tool to validate key architectural choices
 
 5. **Update and Refine**: Incorporate feedback
 
 **Final Action:**
 
-Ask the user: "Should I create `.planning/tech-spec.md` with this content?"
-
-If yes, delegate file creation to the @general agent.
+Use the question tool to ask: "Should I create `.planning/tech-spec.md` with this content?"
+   - Options: ["Yes, create it (Recommended)", "No, refine first", "Show me the content first"]
+   - If "Yes, create it": Delegate file creation to the @general agent
+   - If "No, refine first": Gather feedback using the question tool and update the specification
+   - If "Show me the content first": Display the spec and then ask again
 
 **Quality Checklist:**
 - [ ] Files to modify clearly identified
