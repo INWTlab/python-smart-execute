@@ -1,161 +1,181 @@
 ---
-description: Execute active-plan.md by creating todos and implementing step-by-step
+description: Execute active-plan.md by delegating cycles to sub-agents with interruptible state tracking
 agent: build
 ---
 
-You will execute the implementation plan in `.planning/active-plan.md` one step at a time, using opencode's todo system to track progress.
+You will execute the implementation plan in `.planning/active-plan.md` by delegating each cycle to a sub-agent. The main agent only tracks cycle-level progress, enabling interruption and resumption at any time.
 
 **Input:**
 Implementation plan from `.planning/active-plan.md`
 
+**Architecture:**
+- **Main Agent (Orchestrator)**: Manages cycle-level todos, delegates implementation to sub-agents, syncs state to disk
+- **Sub-Agent (Implementer)**: Executes all tasks within a single cycle (STUB/TEST/IMPLEMENT/VERIFY/REFACTOR)
+
 **Action:**
 
-1. **Parse the Plan**
+1. **Parse the Plan and Restore State**
    - Read `.planning/active-plan.md`
    - Read `.planning/tech-spec.md` for implementation details
-   - Identify all cycles and their tasks
+   - Check which cycles are already marked `[x]` complete in active-plan.md
+   - Identify remaining cycles that need implementation
 
-2. **Create Todo List**
+2. **Create/Restore Cycle-Level Todo List**
    
-   Parse the plan structure and create todos using the `todowrite` tool. Each checkbox item becomes a todo task:
+   Create todos ONLY for cycles (not individual tasks). Use the `todowrite` tool:
    
-   **For TDD Plans (New Features):**
    ```
-   Cycle 1: [Feature Name]
-   - STUB: Create function signature
-   - TEST: Write failing test
-   - VERIFY FAIL: Run tests (expect failure)
-   - IMPLEMENT: Replace stub with real logic
-   - VERIFY PASS: Run tests (expect pass)
-   - REFACTOR: Clean up code
-   - VERIFY PASS: Run tests (expect pass)
+   - Cycle 1: [Feature Name] (completed/pending/in_progress)
+   - Cycle 2: [Feature Name] (pending)
+   - Cycle 3: [Feature Name] (pending)
    ```
    
-   **For Bugfix Plans (Red-Green-Refactor):**
-   ```
-   Cycle 1: [Bug Fix Name]
-   - RED: Write failing test that demonstrates bug
-   - VERIFY FAIL: Run tests (confirm bug exists)
-   - GREEN: Fix the bug
-   - VERIFY PASS: Run tests (bug fixed)
-   - REFACTOR: Clean up if needed
-   - VERIFY PASS: Run tests (still passing)
-   ```
+   If resuming after interruption:
+   - Mark already-completed cycles (from active-plan.md checkboxes) as `completed`
+   - Mark current cycle as `in_progress` if partially done
+   - Remaining cycles as `pending`
 
-3. **Execute Tasks Sequentially**
+3. **Execute Cycles via Sub-Agents**
    
-   For each todo task (in order):
+   For each incomplete cycle, in order:
    
-   **STUB Tasks:**
-   - Check if target file exists
-   - Create file if missing, or read and update if exists
-   - Add function signature with dummy return value (e.g., `return null`, `return true`)
-   - Do NOT implement real logic yet
+   **a. Mark Cycle In Progress**
+   - Update todo: `pending` → `in_progress`
    
-   **TEST Tasks:**
-   - Check if test file exists (create if missing)
-   - Import the function/module being tested
-   - Write test case that asserts the *real* expected behavior
-   - Test should be specific and match tech-spec requirements
+   **b. Delegate to Sub-Agent**
    
-   **RED Tasks (for Bugfixes):**
-   - Write a test that demonstrates the current buggy behavior
-   - The test should fail, proving the bug exists
+   Use the `task` tool to launch a `general` sub-agent with this prompt structure:
    
-   **VERIFY FAIL Tasks:**
-   - Run the test command from `AGENTS.md` (usually `npm run test:unit`)
-   - **Expected**: Test FAILS (non-zero exit code)
-   - **If passes**: STOP - the test is broken (false positive). Ask user for help.
+   ```
+   Execute Cycle [N]: [Cycle Name] from .planning/active-plan.md
    
-   **IMPLEMENT Tasks:**
-   - Read the failing test output to understand what's needed
-   - Replace stub/buggy code with real implementation
-   - Follow the approach described in `tech-spec.md`
+   Read the cycle tasks from .planning/active-plan.md and execute them in order:
    
-   **GREEN Tasks (for Bugfixes):**
-   - Fix the bug in the identified file/section
-   - Follow the fix approach from `tech-spec.md`
+   Tasks for this cycle:
+   [List the specific tasks for this cycle from active-plan.md]
    
-   **VERIFY PASS Tasks:**
-   - Run the test command from `AGENTS.md`
-   - **Expected**: Test PASSES (exit code 0)
-   - **If fails**: Debug and retry (up to 3 attempts), then ask for help
+   Execute each task:
+   - STUB: Add function signature with dummy return
+   - TEST: Write failing test matching tech-spec
+   - VERIFY FAIL: Run tests (must fail)
+   - IMPLEMENT: Replace stub with real logic per tech-spec.md
+   - VERIFY PASS: Run tests (must pass)
+   - REFACTOR: Clean up code (no behavior change)
+   - VERIFY PASS: Run tests (must pass)
    
-   **REFACTOR Tasks:**
-   - Improve code for readability, performance, or maintainability
-   - Do NOT change behavior
-   - Focus on: naming, structure, removing duplication
+   Rules:
+   - Follow test command from AGENTS.md (npm run test:unit)
+   - Run lint/typecheck after implementation if specified in AGENTS.md
+   - Do NOT modify tech-spec.md or story.md
+   - Return SUCCESS when all cycle tasks complete, or FAILURE with error details
+   ```
    
-4. **Progress Tracking**
+   **c. Handle Sub-Agent Result**
    
-   - Update todo status as you work:
-     - `pending` → `in_progress` (when starting a task)
-     - `in_progress` → `completed` (when task succeeds)
-   - After completing a task, move to the next one
-   - After completing a full cycle, report progress to user
+   - **SUCCESS**: 
+     - Update todo: `in_progress` → `completed`
+     - Sync to active-plan.md: Mark cycle checkbox as `[x]`
+     - Report completion to user
+     - Continue to next cycle
+   
+   - **FAILURE**:
+     - Keep cycle as `in_progress`
+     - Report error to user
+     - Ask user for guidance before retrying
+   
+   **d. Sync State After Each Cycle**
+   
+   After sub-agent completes successfully:
+   1. Update active-plan.md checkbox: `- [ ]` → `- [x]`
+   2. Update opencode todo list: cycle marked `completed`
+   3. Report: "Cycle [N] complete. State synced."
 
-5. **Cycle Boundaries**
+4. **Cycle Boundaries**
    
-   - If next task is in the **same cycle**: Continue automatically
-   - If next task starts a **new cycle**: 
-     - Report completion of current cycle
-     - Ask user: "Cycle [N] complete. Continue with next cycle?"
+   - **Within same session**: Continue to next cycle automatically
+   - **After interruption**: Parse active-plan.md to find last completed cycle, resume from next
+   - **User pause request**: Complete current cycle first, then stop (state is preserved)
+
+5. **Interruption and Resumption**
+   
+   This architecture enables clean resumption:
+   
+   ```
+   Session 1:
+   → Cycle 1: completed, synced to disk
+   → Cycle 2: completed, synced to disk
+   → Cycle 3: in_progress when interrupted
+   
+   Session 2 (resumption):
+   → Parse active-plan.md: Cycles 1-2 marked [x]
+   → Create todos: Cycles 1-2 completed, Cycle 3 in_progress
+   → Re-delegate Cycle 3 to sub-agent
+   → Continue from there
+   ```
 
 **Error Handling:**
 
 - **No active-plan.md**: Report "No implementation plan found. Run `/create-active-plan` first."
-- **All tasks complete**: Report "All tasks in active-plan are complete!"
-- **Test unexpectedly passes** (VERIFY FAIL): STOP and ask user - test may be wrong
-- **Test fails 3 times** (VERIFY PASS): STOP and ask user for help
-- **Missing tech spec**: STOP - do not guess signatures, ask user
+- **All cycles complete**: Report "All cycles in active-plan are complete!"
+- **Sub-agent failure**: Report error, ask user for guidance
+- **Missing tech spec**: STOP - sub-agent cannot proceed without specifications
 
 **Important Rules:**
 
-- **NEVER** modify `tech-spec.md` or `story.md`
-- **Only** modify source code, test files, and files listed in tech-spec
-- **Always** run lint/typecheck after implementation if specified in AGENTS.md
-- **Follow** the exact test command from AGENTS.md (e.g., `npm run test:unit`)
+- **Main agent**: Only manages cycles, delegates all implementation to sub-agents
+- **Sub-agents**: Do all STUB/TEST/IMPLEMENT/VERIFY/REFACTOR work
+- **State sync**: After each cycle, update both active-plan.md AND todo list
+- **Never skip sync**: Always sync state before moving to next cycle
+- **Resumability**: Any session can resume by reading active-plan.md checkboxes
 
 **Example Workflow:**
 
 ```
 → Reading active-plan.md...
-→ Found 2 cycles with 14 total tasks
-→ Creating todo list...
-
-✓ Cycle 1: getMultilineStatementRange
-  [ ] STUB: Add function signature
-  [ ] TEST: Write unit tests
-  [ ] VERIFY FAIL: Run tests
-  [ ] IMPLEMENT: Bracket balancing logic
-  [ ] VERIFY PASS: Run tests
-  [ ] REFACTOR: Clean up
-  [ ] VERIFY PASS: Run tests
-
-✓ Cycle 2: smartSelect Integration
-  [ ] STUB: Call getMultilineStatementRange
-  [ ] TEST: Write integration tests
-  ...
-
-→ Starting Cycle 1, Task 1: STUB
-  [in_progress] STUB: Add function signature
-  → Reading src/smartExecute/selection.ts...
-  → Adding function signature with dummy return...
-  [completed] STUB: Add function signature
+→ Found 3 cycles, 2 already complete
+→ Restoring todo state...
   
-→ Starting Cycle 1, Task 2: TEST
-  [in_progress] TEST: Write unit tests
-  → Creating test file...
-  → Writing test cases...
-  [completed] TEST: Write unit tests
+  [x] Cycle 1: getMultilineStatementRange (completed)
+  [x] Cycle 2: smartSelect Integration (completed)
+  [ ] Cycle 3: Edge Cases (pending)
+
+→ Starting Cycle 3...
+  [in_progress] Cycle 3: Edge Cases
   
-→ Cycle 1 complete. Continue with next cycle?
+→ Delegating to sub-agent...
+  → Sub-agent executing: STUB, TEST, VERIFY FAIL, IMPLEMENT, VERIFY PASS, REFACTOR, VERIFY PASS
+  → Sub-agent reports: SUCCESS
+  
+→ Syncing state...
+  → Updated active-plan.md: Cycle 3 marked [x]
+  → Updated todo list: Cycle 3 completed
+  
+→ Cycle 3 complete. State synced.
+→ All cycles complete!
+```
+
+**Resumption Example:**
+
+```
+→ Reading active-plan.md...
+→ Cycle 1: [x] complete
+→ Cycle 2: [ ] incomplete (was in progress when interrupted)
+→ Cycle 3: [ ] pending
+
+→ Creating todos from saved state...
+  [x] Cycle 1: getMultilineStatementRange (completed)
+  [ ] Cycle 2: smartSelect Integration (in_progress)
+  [ ] Cycle 3: Edge Cases (pending)
+
+→ Resuming Cycle 2...
+  → Delegating to sub-agent...
+  → Sub-agent executing remaining tasks...
 ```
 
 **Quality Checklist:**
 - [ ] active-plan.md parsed correctly
-- [ ] Todos created for all tasks
-- [ ] Test command matches AGENTS.md
-- [ ] Each task executed in order
-- [ ] Verify steps actually run tests
-- [ ] Progress tracked via todo status
+- [ ] Only cycle-level todos created (not task-level)
+- [ ] Sub-agent receives complete cycle context
+- [ ] State synced to active-plan.md after each cycle
+- [ ] State synced to todo list after each cycle
+- [ ] Resumption works from saved state
