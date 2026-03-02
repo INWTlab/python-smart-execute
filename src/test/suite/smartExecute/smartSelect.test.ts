@@ -158,7 +158,7 @@ suite('SmartSelect Behavior Test Suite', () => {
     });
 
     suite('Multiline Statement Selection Tests', () => {
-        let originalGetConfig: any;
+        let originalGetConfig: () => boolean;
 
         setup(() => {
             originalGetConfig = getConfigSmartExecute;

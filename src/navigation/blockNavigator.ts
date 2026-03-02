@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { findNextBlockHeader, findPreviousBlockHeader, findBlockHeaderFromLine } from './blockFinder';
+import { findNextBlockHeader, findPreviousBlockHeader, findBlockHeaderFromLine, levelOfIndentation } from './blockFinder';
 // import { skipMultiLineStatement } from './multiLineStatement'; // Will be used when needed
 
 /**
@@ -25,15 +25,18 @@ export function getTargetPosition(document: vscode.TextDocument, currentPosition
     // Find the target block header based on direction
     if (direction > 0) {
         // Navigate to next block
-        const nextBlock = findNextBlockHeader(document, blockHeader.lineNumber);
+        // Get current block's indentation for indentation-aware navigation
+        const currentIndent = levelOfIndentation(blockHeader.text);
+        const nextBlock = findNextBlockHeader(document, blockHeader.lineNumber, currentIndent);
         if (nextBlock) {
             return new vscode.Position(nextBlock.lineNumber, 0);
         }
-        // If no next block found, stay at current position
-        return currentPosition;
+        // If no next block found, go to end of document
+        return new vscode.Position(document.lineCount - 1, 0);
     } else {
         // Navigate to previous block
-        const previousBlock = findPreviousBlockHeader(document, blockHeader.lineNumber);
+        const currentIndent = levelOfIndentation(blockHeader.text);
+        const previousBlock = findPreviousBlockHeader(document, blockHeader.lineNumber, currentIndent);
         if (previousBlock) {
             return new vscode.Position(previousBlock.lineNumber, 0);
         }

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { skipMultiLineStatement } from './multiLineStatement';
+import { isDecorator } from '../smartExecute/helpers';
 
 /**
  * Get the level of indentation for a line (in spaces)
@@ -55,6 +56,27 @@ export function findBlockHeaderFromLine(document: vscode.TextDocument, line: num
         return undefined;
     }
     
+    const startLine = document.lineAt(line);
+    
+    // If we're on a decorator, look forward to find the decorated block
+    if (isDecorator(startLine.text)) {
+        let forwardLine = line + 1;
+        while (forwardLine < document.lineCount) {
+            const lineObj = document.lineAt(forwardLine);
+            // Skip empty lines and other decorators
+            if (lineObj.isEmptyOrWhitespace || isDecorator(lineObj.text)) {
+                forwardLine++;
+                continue;
+            }
+            // Found the decorated block
+            if (isBlockHeader(lineObj, document)) {
+                return lineObj;
+            }
+            // Found non-decorated, non-header content - stop searching
+            break;
+        }
+    }
+    
     // Skip backwards to find the actual block header
     let currentLine = line;
     while (currentLine >= 0) {
@@ -104,9 +126,10 @@ export function getParentBlockHeader(document: vscode.TextDocument, startLine: n
  * Find the next block header in the document
  * @param document The document to search in
  * @param startLine The line to start searching from
+ * @param targetIndentLevel Optional maximum indentation level to consider
  * @returns The next block header or undefined if not found
  */
-export function findNextBlockHeader(document: vscode.TextDocument, startLine: number): vscode.TextLine | undefined {
+export function findNextBlockHeader(document: vscode.TextDocument, startLine: number, targetIndentLevel?: number): vscode.TextLine | undefined {
     if (startLine < 0 || startLine >= document.lineCount) {
         return undefined;
     }
@@ -116,6 +139,13 @@ export function findNextBlockHeader(document: vscode.TextDocument, startLine: nu
     while (lineNum < document.lineCount) {
         const lineObj = document.lineAt(lineNum);
         if (isBlockHeader(lineObj, document)) {
+            if (targetIndentLevel !== undefined) {
+                const blockIndent = levelOfIndentation(lineObj.text);
+                if (blockIndent > targetIndentLevel) {
+                    lineNum++;
+                    continue;
+                }
+            }
             return lineObj;
         }
         lineNum++;
@@ -128,9 +158,10 @@ export function findNextBlockHeader(document: vscode.TextDocument, startLine: nu
  * Find the previous block header in the document
  * @param document The document to search in
  * @param startLine The line to start searching from
+ * @param targetIndentLevel Optional maximum indentation level to consider
  * @returns The previous block header or undefined if not found
  */
-export function findPreviousBlockHeader(document: vscode.TextDocument, startLine: number): vscode.TextLine | undefined {
+export function findPreviousBlockHeader(document: vscode.TextDocument, startLine: number, targetIndentLevel?: number): vscode.TextLine | undefined {
     if (startLine < 0 || startLine >= document.lineCount) {
         return undefined;
     }
@@ -140,6 +171,13 @@ export function findPreviousBlockHeader(document: vscode.TextDocument, startLine
     while (lineNum >= 0) {
         const lineObj = document.lineAt(lineNum);
         if (isBlockHeader(lineObj, document)) {
+            if (targetIndentLevel !== undefined) {
+                const blockIndent = levelOfIndentation(lineObj.text);
+                if (blockIndent > targetIndentLevel) {
+                    lineNum--;
+                    continue;
+                }
+            }
             return lineObj;
         }
         lineNum--;
