@@ -21,8 +21,12 @@ This is a VS Code extension called "Python Smart Execute" that intelligently sen
 - **Tests matching pattern**: `npm run test:unit -- --grep "pattern"`
 - **Example**: `npm run compile && npx mocha --ui tdd out/test/suite/smartExecute/smartSelect.test.js`
 
-### Skill
-Use the `run-unit-tests` skill to compile, lint, and run unit tests in one step.
+### Skills
+
+**IMPORTANT**: When a skill exists for a task, always use the `skill` tool to load it first, then follow its instructions. Do NOT run commands directly from this file when a skill is available.
+
+Available skills:
+- **run-unit-tests**: Use this skill (not `npm run test:unit`) to compile, lint, and run unit tests in one step. This ensures consistent verification across compile, lint, and test phases.
 
 ### Testing Notes
 - Unit tests use Mocha with TDD interface (`suite`/`test`)
@@ -127,6 +131,8 @@ src/
 │       ├── mocks.ts         # VS Code API mocks for unit testing
 │       ├── vscode.mock.ts   # VS Code module mock
 │       ├── smartExecute/    # Smart execution tests
+│       │   ├── testHelpers.ts    # Test utility facility (DocumentState, expectSelection)
+│       │   └── testHelpers.test.ts
 │       └── navigation/      # Navigation tests
 ```
 
@@ -170,6 +176,17 @@ const originalGetConfig = getConfigSmartExecute;
 // ... test code ...
 (getConfigSmartExecute as unknown as () => boolean) = originalGetConfig;
 ```
+
+### Test Helpers Facility
+- Use `DocumentState` and `expectSelection` from `./testHelpers` to reduce test boilerplate
+- `DocumentState(content, cursorLine, cursorChar).createEditor()` creates a mock editor with cursor position
+- `expectSelection(state, startLine, endLine, options?)` mocks config, calls smartSelect, and asserts selection
+- Example:
+  ```typescript
+  const state = new DocumentState('@timer\ndef foo():\n    pass\n', 1, 0);
+  expectSelection(state, 0, 2);  // Expects lines 0-2 selected
+  expectSelection(state, 0, 0, {smartExecute: false});  // Single line when disabled
+  ```
 
 ## Development Best Practices
 
