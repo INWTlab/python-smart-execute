@@ -3,10 +3,10 @@ import * as vscode from 'vscode';
 import {
     isDecorator,
     findNextCodeLine,
-    getMultilineStatementRange,
     isSelectionEmpty
 } from '../../../smartExecute/selection';
 import { MockTextDocument } from '../mocks';
+import { DocumentState, expectSelection } from './testHelpers';
 
 suite('Selection Utils Test Suite', () => {
     test('isDecorator basic', () => {
@@ -87,78 +87,38 @@ suite('Selection Utils Test Suite', () => {
 
     suite('getMultilineStatementRange Tests', () => {
         test('Single line returns undefined', () => {
-            const content = 'x = 1\ny = 2\nz = 3';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(1);
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.strictEqual(result, undefined);
+            const state = new DocumentState('x = 1\ny = 2\nz = 3', 1, 0);
+            expectSelection(state, 1, 1);
         });
 
         test('Cursor on opening line', () => {
-            const content = 'x = (\n    1 + 2\n)';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(0);
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 0);
-            assert.strictEqual(result.endLine.lineNumber, 2);
+            const state = new DocumentState('x = (\n    1 + 2\n)', 0, 0);
+            expectSelection(state, 0, 2);
         });
 
         test('Cursor on middle line', () => {
-            const content = 'x = (\n    1 + 2\n)';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(1);
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 0);
-            assert.strictEqual(result.endLine.lineNumber, 2);
+            const state = new DocumentState('x = (\n    1 + 2\n)', 1, 0);
+            expectSelection(state, 0, 2);
         });
 
         test('Cursor on closing line', () => {
-            const content = 'x = (\n    1 + 2\n)';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(2);
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 0);
-            assert.strictEqual(result.endLine.lineNumber, 2);
+            const state = new DocumentState('x = (\n    1 + 2\n)', 2, 0);
+            expectSelection(state, 0, 2);
         });
 
         test('Nested brackets', () => {
-            const content = 'result = my_function(\n    [\n        1, 2,\n        3\n    ],\n    {"key": "value"}\n)';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(2); // Inside the list
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 0);
-            assert.strictEqual(result.endLine.lineNumber, 6);
+            const state = new DocumentState('result = my_function(\n    [\n        1, 2,\n        3\n    ],\n    {"key": "value"}\n)', 2, 0);
+            expectSelection(state, 0, 6);
         });
 
         test('Strings and comments with brackets', () => {
-            const content = 'text = (\n    "This is a string with (parentheses)"\n    # This is a comment with [brackets]\n)';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(1);
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 0);
-            assert.strictEqual(result.endLine.lineNumber, 3);
+            const state = new DocumentState('text = (\n    "This is a string with (parentheses)"\n    # This is a comment with [brackets]\n)', 1, 0);
+            expectSelection(state, 0, 3);
         });
 
         test('Multiple independent statements', () => {
-            const content = 'first_list = [\n    1,\n    2\n]\n\nsecond_list = [\n    3,\n    4\n]';
-            const doc = new MockTextDocument(content);
-            const currentLine = doc.lineAt(6); // Inside second_list
-            
-            const result = getMultilineStatementRange(currentLine, doc);
-            assert.ok(result !== undefined);
-            assert.strictEqual(result.startLine.lineNumber, 5);
-            assert.strictEqual(result.endLine.lineNumber, 8);
+            const state = new DocumentState('first_list = [\n    1,\n    2\n]\n\nsecond_list = [\n    3,\n    4\n]', 6, 0);
+            expectSelection(state, 5, 8);
         });
     });
 

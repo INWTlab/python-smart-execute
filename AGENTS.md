@@ -167,9 +167,10 @@ src/
 - Use descriptive test names
 
 ### Mock Data
-- Use `MockTextDocument` and `MockTextEditor` from `src/test/suite/mocks.ts`
+- Use `MockTextDocument` and `MockTextEditor` from `src/test/suite/mocks.ts` for direct utility function tests
 - Define multiline content with template literals to preserve formatting
 - Use `assert.strictEqual` for string comparisons
+- Prefer `DocumentState` + `expectSelection` over raw mocks for any test that goes through `smartSelect`
 
 ### Mocking Configuration
 ```typescript
@@ -178,6 +179,10 @@ const originalGetConfig = getConfigSmartExecute;
 // ... test code ...
 (getConfigSmartExecute as unknown as () => boolean) = originalGetConfig;
 ```
+
+### When to Use Direct-Call vs Helper-Facility Tests
+- **Use `expectSelection`**: for any scenario reachable through `smartSelect` (block selection, multiline detection, decorator inclusion, control flow)
+- **Use direct-call tests** (raw mock + assert): for utility functions not called by `smartSelect` (e.g., `findNextCodeLine`, used only by `stepCursor`). These functions cannot be exercised via `expectSelection` and direct-call tests are the correct pattern.
 
 ### Test Helpers Facility
 - Use `DocumentState` and `expectSelection` from `./testHelpers` to reduce test boilerplate
