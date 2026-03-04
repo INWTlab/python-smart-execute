@@ -133,7 +133,9 @@ src/
 │       ├── smartExecute/    # Smart execution tests
 │       │   ├── testHelpers.ts    # Test utility facility (DocumentState, expectSelection)
 │       │   └── testHelpers.test.ts
-│       └── navigation/      # Navigation tests
+│               └── navigation/      # Navigation tests
+            ├── testHelpers.ts    # Test utility facility (DocumentState re-export, expectCursorPosition)
+            └── testHelpers.test.ts
 ```
 
 ## Extension-Specific Patterns
@@ -186,6 +188,17 @@ const originalGetConfig = getConfigSmartExecute;
   const state = new DocumentState('@timer\ndef foo():\n    pass\n', 1, 0);
   expectSelection(state, 0, 2);  // Expects lines 0-2 selected
   expectSelection(state, 0, 0, {smartExecute: false});  // Single line when disabled
+  ```
+
+- Use `DocumentState` and `expectCursorPosition` from `navigation/testHelpers` for navigation tests
+- `expectCursorPosition(state, direction, expectedLine, options?)` calls `jumpNextBlock`/`jumpPreviousBlock` and asserts result position
+- `direction`: `'next'` or `'previous'`; `expectedLine`: line number, `'first-line'`, or `'last-line'`
+- `options.character`: asserts result character position (defaults to 0)
+- Example:
+  ```typescript
+  const state = new DocumentState('def foo():\n    pass\n\ndef bar():\n    pass\n', 0, 0);
+  expectCursorPosition(state, 'next', 3);         // Jumps to line 3
+  expectCursorPosition(state, 'previous', 'first-line');  // Jumps to first line
   ```
 
 ## Development Best Practices
