@@ -7,6 +7,7 @@ import {
 } from '../../../smartExecute/selection';
 import { MockTextDocument } from '../mocks';
 import { DocumentState, expectSelection } from './testHelpers';
+import * as mls from '../../../navigation/multiLineStatement';
 
 suite('Selection Utils Test Suite', () => {
     test('isDecorator basic', () => {
@@ -145,6 +146,20 @@ suite('Selection Utils Test Suite', () => {
             
             assert.strictEqual(isSelectionEmpty(emptySelection), true);
             assert.strictEqual(isSelectionEmpty(sameLineSelection), false);
+        });
+    });
+
+    suite('multiLineStatement Utils Tests', () => {
+        test('isOpenParenthesisLine with strings and comments', () => {
+            assert.strictEqual(mls.isOpenParenthesisLine('x = "text with {"'), false);
+            assert.strictEqual(mls.isOpenParenthesisLine('x = [1, 2, 3]  # comment with {'), false);
+            assert.strictEqual(mls.isOpenParenthesisLine('x = { # comment with }'), true);
+            assert.strictEqual(mls.isOpenParenthesisLine('# { comment only'), false);
+        });
+
+        test('isMultiLineStatementEnd basic', () => {
+            assert.strictEqual(mls.isMultiLineStatementEnd('x = 1'), true);
+            assert.strictEqual(mls.isMultiLineStatementEnd('x = {'), false);
         });
     });
 });;

@@ -130,12 +130,14 @@ src/
 │       ├── index.ts         # Test suite setup
 │       ├── mocks.ts         # VS Code API mocks for unit testing
 │       ├── vscode.mock.ts   # VS Code module mock
-│       ├── smartExecute/    # Smart execution tests
-│       │   ├── testHelpers.ts    # Test utility facility (DocumentState, expectSelection)
+│       ├── navigation/      # Navigation tests
+│       │   ├── blockFinder.test.ts   # Direct-call tests for blockFinder utilities
+│       │   ├── blockNavigator.test.ts
+│       │   ├── testHelpers.ts        # Test utility facility (DocumentState re-export, expectCursorPosition)
 │       │   └── testHelpers.test.ts
-│               └── navigation/      # Navigation tests
-            ├── testHelpers.ts    # Test utility facility (DocumentState re-export, expectCursorPosition)
-            └── testHelpers.test.ts
+│       └── smartExecute/    # Smart execution tests
+│           ├── testHelpers.ts    # Test utility facility (DocumentState, expectSelection)
+│           └── testHelpers.test.ts
 ```
 
 ## Extension-Specific Patterns
