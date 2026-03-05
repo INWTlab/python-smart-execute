@@ -8,6 +8,7 @@
     },
     "icon": "inwt-logo-square.png",
     "version": "26.2.0",
+    "license": "MIT",
     "engines": {
         "vscode": "^1.96.0"
     },
